@@ -27,7 +27,6 @@ class DeviceController extends Controller
         $device->nama = $request->input('nama');
         $device->no_sn = $request->input('no_sn');
         $device->lokasi = $request->input('lokasi');
-        // $device->online = $request->input('online');
         $device->save();
 
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan!');
@@ -54,7 +53,6 @@ class DeviceController extends Controller
         $device->nama = $request->input('nama');
         $device->no_sn = $request->input('no_sn');
         $device->lokasi = $request->input('lokasi');
-        // $device->online = $request->input('online');
         $device->save();
 
         return redirect()->route('devices.index')->with('success', 'Device berhasil diupdate!');

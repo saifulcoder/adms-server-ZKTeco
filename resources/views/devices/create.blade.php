@@ -17,10 +17,7 @@
                 <label for="lokasi">Lokasi</label>
                 <input type="text" name="lokasi" class="form-control" id="lokasi" placeholder="Lokasi">
             </div>
-            <div class="form-group">
-                <label for="online">Online</label>
-                <input type="text" name="online" class="form-control" id="online" placeholder="Online">
-            </div>
+
             <button type="submit" class="btn btn-primary">Simpan</button>
         </form>
     </div>

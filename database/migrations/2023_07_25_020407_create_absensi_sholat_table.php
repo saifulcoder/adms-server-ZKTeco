@@ -7,7 +7,7 @@ class CreateAbsensiSholatTable extends Migration
 {
     public function up()
     {
-        Schema::create('absensi_sholats', function (Blueprint $table) {
+        Schema::create('absensi_sholat', function (Blueprint $table) {
             $table->id();
             $table->string('nis_santri');
             $table->dateTime('table');
@@ -24,7 +24,7 @@ class CreateAbsensiSholatTable extends Migration
 
     public function down()
     {
-        Schema::dropIfExists('absensi_sholats');
+        Schema::dropIfExists('absensi_sholat');
     }
 }
 
