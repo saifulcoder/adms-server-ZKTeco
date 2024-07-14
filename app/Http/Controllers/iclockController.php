@@ -28,7 +28,7 @@ class iclockController extends Controller
         DB::table('device_log')->insert($data);
 
         // update status device
-        DB::table('absensi_mesin')->where('no_sn', $request->SN)->update(['online' => now()]);
+        DB::table('devices')->where('no_sn', $request->SN)->update(['online' => now()]);
             $r = "GET OPTION FROM: ".$request->SN." \n\r
             Stamp=9999 \n\r
             OpStamp=".strtotime('now')." \n\r
@@ -54,7 +54,7 @@ class iclockController extends Controller
     public function receiveRecords(Request $request)
     {
     // cek validasi device fingerprint berdasarkan serial number
-    $cek = DB::table('absensi_mesin')->select('id')->where('no_sn','=',$request->SN)->first();
+    $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
     if(is_null($cek)){return "ERROR";}
 
     try {
@@ -82,7 +82,7 @@ class iclockController extends Controller
                     // $data['id_santri_mesin'] =  trim($req[0]);
                     $data['nis_santri'] =  $nis;
                     $data['waktu'] = $req[1];
-                    $data['id_absensi_mesin'] = $cek->id;
+                    $data['id_devices'] = $cek->id;
                     if($jadwal_sholat->id){
                         DB::table('absensi_sholat')->insert($data);
                     }
