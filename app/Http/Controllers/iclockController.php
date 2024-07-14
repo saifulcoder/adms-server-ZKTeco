@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class iclockController extends Controller
 {
-        /*  
+        /*
     * Handle the incoming request.
     *
     * @param  \Illuminate\Http\Request  $request
@@ -14,7 +14,7 @@ class iclockController extends Controller
     */
    public function __invoke(Request $request)
    {
-    
+
    }
 
     // handshake
@@ -23,7 +23,7 @@ class iclockController extends Controller
         $data['url'] = \Request::getRequestUri();
         $data["data"] = json_encode($request->all());
         $data["sn"] = $request->SN;
-        $data["option"] = $request>option;
+        $data["option"] = $request->option;
         DB::table('device_log')->insert($data);
 
         // update status device
@@ -43,7 +43,7 @@ class iclockController extends Controller
             Encrypt=0";
             $r = trim(preg_replace('/\t+/', '', $r));
         // $r = "GET OPTION FROM:%s{$request->SN}\nStamp=1565089939\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";
-        
+
         return $r;
     }
     // implementasi https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/
@@ -51,7 +51,7 @@ class iclockController extends Controller
 
     // request absensi
     public function receiveRecords(Request $request)
-    {    
+    {
     // cek validasi device fingerprint berdasarkan serial number
     $cek = DB::table('absensi_mesin')->select('id')->where('no_sn','=',$request->SN)->first();
     if(is_null($cek)){return "ERROR";}
@@ -77,7 +77,7 @@ class iclockController extends Controller
                     $data = [];
                     $data['table'] = $request->table;
                     $data['data'] = $content;
-                    $data['id_jadwal_sholat'] = $jadwal_sholat->id; 
+                    $data['id_jadwal_sholat'] = $jadwal_sholat->id;
                     // $data['id_santri_mesin'] =  trim($req[0]);
                     $data['nis_santri'] =  $nis;
                     $data['waktu'] = $req[1];
@@ -93,14 +93,14 @@ class iclockController extends Controller
             return "OK: ".$jml;
         } catch (Throwable $e) {
             $data['error'] = $e;
-            
+
             DB::table('error_log')->insert($data);
             report($e);
-    
+
             return "ERROR:".$jml."\n";
         }
 
-        
+
         // if (isset($request->table)) {
         //     $table = $request->table;
         // } else {
@@ -126,6 +126,6 @@ class iclockController extends Controller
         // }
         // return $this->returnOk();
     }
-   
+
 
 }
