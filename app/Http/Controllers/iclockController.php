@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class iclockController extends Controller
 {
@@ -28,18 +29,18 @@ class iclockController extends Controller
 
         // update status device
         DB::table('absensi_mesin')->where('no_sn', $request->SN)->update(['online' => now()]);
-            $r = "GET OPTION FROM: ".$request->SN."
-            Stamp=9999
-            OpStamp=".strtotime('now')."
-            ErrorDelay=60
-            Delay=30
-            ResLogDay=18250
-            ResLogDelCount=10000
-            ResLogCount=50000
-            TransTimes=00:00;14:05
-            TransInterval=1
-            TransFlag=1111000000
-            Realtime=1
+            $r = "GET OPTION FROM: ".$request->SN." \n\r
+            Stamp=9999 \n\r
+            OpStamp=".strtotime('now')." \n\r
+            ErrorDelay=60 \n\r
+            Delay=30 \n\r
+            ResLogDay=18250 \n\r
+            ResLogDelCount=10000 \n\r
+            ResLogCount=50000 \n\r
+            TransTimes=00:00;14:05 \n\r
+            TransInterval=1 \n\r
+            TransFlag=1111000000 \n\r
+            Realtime=1 \n\r
             Encrypt=0";
             $r = trim(preg_replace('/\t+/', '', $r));
         // $r = "GET OPTION FROM:%s{$request->SN}\nStamp=1565089939\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";
