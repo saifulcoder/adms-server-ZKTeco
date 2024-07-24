@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class iclockController extends Controller
 {
-        /*  
+        /*
     * Handle the incoming request.
     *
     * @param  \Illuminate\Http\Request  $request
@@ -14,7 +15,7 @@ class iclockController extends Controller
     */
    public function __invoke(Request $request)
    {
-    
+
    }
 
     // handshake
@@ -23,27 +24,27 @@ class iclockController extends Controller
         $data['url'] = \Request::getRequestUri();
         $data["data"] = json_encode($request->all());
         $data["sn"] = $request->SN;
-        $data["option"] = $request>option;
+        $data["option"] = $request->option;
         DB::table('device_log')->insert($data);
 
         // update status device
-        DB::table('absensi_mesin')->where('no_sn', $request->SN)->update(['online' => now()]);
-            $r = "GET OPTION FROM: ".$request->SN."
-            Stamp=9999
-            OpStamp=".strtotime('now')."
-            ErrorDelay=60
-            Delay=30
-            ResLogDay=18250
-            ResLogDelCount=10000
-            ResLogCount=50000
-            TransTimes=00:00;14:05
-            TransInterval=1
-            TransFlag=1111000000
-            Realtime=1
+        DB::table('devices')->where('no_sn', $request->SN)->update(['online' => now()]);
+            $r = "GET OPTION FROM: ".$request->SN." \n\r
+            Stamp=9999 \n\r
+            OpStamp=".strtotime('now')." \n\r
+            ErrorDelay=60 \n\r
+            Delay=30 \n\r
+            ResLogDay=18250 \n\r
+            ResLogDelCount=10000 \n\r
+            ResLogCount=50000 \n\r
+            TransTimes=00:00;14:05 \n\r
+            TransInterval=1 \n\r
+            TransFlag=1111000000 \n\r
+            Realtime=1 \n\r
             Encrypt=0";
             $r = trim(preg_replace('/\t+/', '', $r));
         // $r = "GET OPTION FROM:%s{$request->SN}\nStamp=1565089939\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";
-        
+
         return $r;
     }
     // implementasi https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/
@@ -51,9 +52,9 @@ class iclockController extends Controller
 
     // request absensi
     public function receiveRecords(Request $request)
-    {    
+    {
     // cek validasi device fingerprint berdasarkan serial number
-    $cek = DB::table('absensi_mesin')->select('id')->where('no_sn','=',$request->SN)->first();
+    $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
     if(is_null($cek)){return "ERROR";}
 
     try {
@@ -77,11 +78,11 @@ class iclockController extends Controller
                     $data = [];
                     $data['table'] = $request->table;
                     $data['data'] = $content;
-                    $data['id_jadwal_sholat'] = $jadwal_sholat->id; 
+                    $data['id_jadwal_sholat'] = $jadwal_sholat->id;
                     // $data['id_santri_mesin'] =  trim($req[0]);
                     $data['nis_santri'] =  $nis;
                     $data['waktu'] = $req[1];
-                    $data['id_absensi_mesin'] = $cek->id;
+                    $data['id_devices'] = $cek->id;
                     if($jadwal_sholat->id){
                         DB::table('absensi_sholat')->insert($data);
                     }
@@ -93,14 +94,14 @@ class iclockController extends Controller
             return "OK: ".$jml;
         } catch (Throwable $e) {
             $data['error'] = $e;
-            
+
             DB::table('error_log')->insert($data);
             report($e);
-    
+
             return "ERROR:".$jml."\n";
         }
 
-        
+
         // if (isset($request->table)) {
         //     $table = $request->table;
         // } else {
@@ -126,6 +127,6 @@ class iclockController extends Controller
         // }
         // return $this->returnOk();
     }
-   
+
 
 }
