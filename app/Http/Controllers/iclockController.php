@@ -58,7 +58,6 @@ class iclockController extends Controller
     // cek validasi device fingerprint berdasarkan serial number
     $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
     if(is_null($cek)){return "ERROR";}
-
     try {
         $content = $request->getContent();
         $arr = preg_split('/\\r\\n|\\r|,|\\n/', $content);
