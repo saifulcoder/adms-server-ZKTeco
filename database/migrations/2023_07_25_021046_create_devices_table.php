@@ -13,7 +13,7 @@ class CreateDevicesTable extends Migration
             $table->string('nama');
             $table->string('no_sn')->unique();
             $table->string('lokasi');
-            $table->boolean('online')->nullable();
+            $table->datetime('online')->nullable();
             $table->timestamps();
         });
     }

@@ -52,7 +52,9 @@ class iclockController extends Controller
 
     // request absensi
     public function receiveRecords(Request $request)
-    {
+    {   
+        $log['data'] = $request->getContent();
+        DB::table('finger_log')->insert($log);
     // cek validasi device fingerprint berdasarkan serial number
     $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
     if(is_null($cek)){return "ERROR";}
