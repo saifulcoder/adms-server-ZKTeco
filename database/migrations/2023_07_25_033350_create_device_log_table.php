@@ -11,7 +11,7 @@ class CreateDeviceLogTable extends Migration
         Schema::create('device_log', function (Blueprint $table) {
             $table->id();
             $table->text('data');
-            $table->date('tgl');
+            $table->date('tgl')->nullable();
             $table->string('sn');
             $table->string('option');
             $table->string('url');
