@@ -13,7 +13,7 @@ class CreateDeviceLogTable extends Migration
             $table->text('data');
             $table->date('tgl')->nullable();
             $table->string('sn');
-            $table->string('option');
+            $table->string('option')->nullable();
             $table->string('url');
             $table->timestamps();
         });
