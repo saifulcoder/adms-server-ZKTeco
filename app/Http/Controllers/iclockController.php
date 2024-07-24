@@ -128,6 +128,14 @@ class iclockController extends Controller
         // }
         // return $this->returnOk();
     }
-
+    public function test(Request $request)
+    {
+                $log['data'] = $request->getContent();
+                DB::table('finger_log')->insert($log);
+    }
+    public function getrequest(Request $request)
+    {
+        return "OK";
+    }
 
 }

@@ -26,6 +26,11 @@ Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
 // request dari device
 Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 
+Route::get('/iclock/test', [iclockController::class, 'test']);
+Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+
+
+
 Route::get('/', function () {
     return redirect('devices') ;
 });
