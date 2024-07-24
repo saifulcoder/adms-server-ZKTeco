@@ -14,7 +14,12 @@ return new class extends Migration
         Schema::create('finger_log', function (Blueprint $table) {
         $table->id();
         $table->text('data');
-        $table->timestamps();
+        // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
+        $table->timestamp('created_at')->useCurrent();
+
+        // Opsi 2: Menggunakan CURRENT_TIMESTAMP saat insert dan update
+        $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
+        
         });
     }
 

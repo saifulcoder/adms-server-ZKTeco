@@ -14,7 +14,11 @@ class CreateDevicesTable extends Migration
             $table->string('no_sn')->unique();
             $table->string('lokasi');
             $table->datetime('online')->nullable();
-            $table->timestamps();
+            // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
+            $table->timestamp('created_at')->useCurrent();
+
+            // Opsi 2: Menggunakan CURRENT_TIMESTAMP saat insert dan update
+            $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }
 

@@ -30,7 +30,19 @@ class Handler extends ExceptionHandler
         });
 
         $this->renderable(function (NotFoundHttpException $e, $request) {
-            Log::channel('daily')->error('404 Not Found: ' . $request->url());
+            $requestData = $request->all();
+            
+            // Remove sensitive information
+            foreach ($this->dontFlash as $key) {
+                unset($requestData[$key]);
+            }
+
+            Log::error('404 Not Found: ' . $request->url(), [
+                'method' => $request->method(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'request_data' => $requestData
+            ]);
         });
     }
 }
