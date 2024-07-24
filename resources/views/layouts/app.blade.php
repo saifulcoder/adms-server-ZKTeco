@@ -22,8 +22,10 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('absensi_sholat.index') }}">Laporan Absensi Sholat</a>
                     </li>
+                    
                 </ul>
             </div>
+            <span>{{ now() }}</span>
         </div>
     </nav>
 
