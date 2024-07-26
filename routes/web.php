@@ -21,14 +21,21 @@ Route::resource('absensi_sholat', AbsensiSholatController::class);
 Route::resource('devices', DeviceController::class);
 
 
-// handshake
-Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
-// request dari device
-Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
+// // handshake
+// Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
+// // request dari device
+// Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 
-Route::get('/iclock/test', [iclockController::class, 'test']);
-Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+// Route::get('/iclock/test', [iclockController::class, 'test']);
+// Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
+
+//tools
+//fingerprint
+// Route::post('/iclock/cdata', 'adms\iclock@receiveRecords');
+// Route::get('/iclock/cdata', 'adms\iclock@checkDevice');
+// Route::get('iclock/getrequest','adms\iclock@getrequest');
+// Route::get('/iclock/test', 'adms\iclock@test');
 
 
 Route::get('/', function () {
