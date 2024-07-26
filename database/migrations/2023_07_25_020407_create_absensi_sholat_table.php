@@ -12,6 +12,7 @@ class CreateAbsensiSholatTable extends Migration
             $table->string('nis_santri');
             $table->dateTime('table');
             $table->dateTime('waktu');
+            $table->text('data');
             $table->date('tgl');
             $table->unsignedBigInteger('id_jadwal_sholat');
             $table->unsignedBigInteger('id_devices');
