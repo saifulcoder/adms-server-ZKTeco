@@ -14,13 +14,13 @@ use App\Http\Controllers\iclockController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-// handshake
-Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
-// request dari device
-Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
+// // handshake
+// Route::get('/iclock/cdata', [iclockController::class, 'handshake']);
+// // request dari device
+// Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 
-Route::get('/iclock/test', [iclockController::class, 'test']);
-Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
+// Route::get('/iclock/test', [iclockController::class, 'test']);
+// Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
