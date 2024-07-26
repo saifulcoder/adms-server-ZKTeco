@@ -14,10 +14,9 @@ class CreateDeviceLogTable extends Migration
             $table->date('tgl')->nullable();
             $table->string('sn');
             $table->string('option')->nullable();
-            $table->string('url');
+            $table->string('url')->nullable();
             // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
             $table->timestamp('created_at')->useCurrent();
-
             // Opsi 2: Menggunakan CURRENT_TIMESTAMP saat insert dan update
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });

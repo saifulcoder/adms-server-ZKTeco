@@ -28,7 +28,10 @@ class iclockController extends Controller
         DB::table('device_log')->insert($data);
 
         // update status device
-        DB::table('devices')->where('no_sn', $request->SN)->update(['online' => now()]);
+        DB::table('devices')->updateOrInsert(
+            ['no_sn' => $request->SN],
+            ['online' => now()]
+        );
             $r = "GET OPTION FROM: ".$request->SN." \n\r
             Stamp=9999 \n\r
             OpStamp=".strtotime('now')." \n\r
@@ -53,43 +56,21 @@ class iclockController extends Controller
     // request absensi
     public function receiveRecords(Request $request)
     {   
-        $log['data'] = $request->getContent();
-        DB::table('finger_log')->insert($log);
-    // cek validasi device fingerprint berdasarkan serial number
-    $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
-    //if(is_null($cek)){return "ERROR";}
-    try {
-        $content = $request->getContent();
-        $arr = preg_split('/\\r\\n|\\r|,|\\n/', $content);
-        $jml = count($arr);
+        
+        try {
+        $content['data'] = $request->getContent();
+        DB::table('finger_log')->insert($content['data']);
+        $arr = preg_split('/\\r\\n|\\r|,|\\n/', $content['data']);
+        $tot = count($arr);
 
-        foreach($arr as $rey){
-            // $jam = $req[1];
-            $req = preg_split('/\\t\\n|\\t|,|\\n/', $rey);
-            if(!empty(trim($req[0])) ){
-                    $jam = date('H:i:s', strtotime($req[1]));
-                    // echo $jam;
-
-                    $nis = trim($req[0]);
-                    $data = [];
-                    $data['table'] = $request->table;
-                    $data['data'] = $content;
-                    // $data['id_santri_mesin'] =  trim($req[0]);
-                    $data['nis_santri'] =  $nis;
-                    $data['waktu'] = $req[1];
-
-                    DB::table('absensi_sholat')->insert($data);
-
-            }
-        }
-            return "OK: ".$jml;
+            return "OK: ".$tot;
         } catch (Throwable $e) {
             $data['error'] = $e;
 
             DB::table('error_log')->insert($data);
             report($e);
 
-            return "ERROR:".$jml."\n";
+            return "ERROR:".$tot."\n";
         }
 
 
@@ -101,6 +82,8 @@ class iclockController extends Controller
     }
     public function getrequest(Request $request)
     {
+        // $r = "GET OPTION FROM: ".$request->SN."\nStamp=".strtotime('now')."\nOpStamp=".strtotime('now')."\nErrorDelay=60\nDelay=30\nResLogDay=18250\nResLogDelCount=10000\nResLogCount=50000\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nRealtime=1\nEncrypt=0";
+
         return "OK";
     }
 

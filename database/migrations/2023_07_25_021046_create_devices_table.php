@@ -10,9 +10,9 @@ class CreateDevicesTable extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            $table->string('nama');
+            $table->string('nama')->nullable();
             $table->string('no_sn')->unique();
-            $table->string('lokasi');
+            $table->string('lokasi')->nullable();
             $table->datetime('online')->nullable();
             // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
             $table->timestamp('created_at')->useCurrent();

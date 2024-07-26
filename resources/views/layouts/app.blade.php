@@ -17,10 +17,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('devices.index') }}">Daftar Device</a>
+                        <a class="nav-link" href="{{ route('devices.index') }}">Device</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('absensi_sholat.index') }}">Laporan Absensi Sholat</a>
+                        <a class="nav-link" href="{{ route('devices.DeviceLog') }}">Device Log</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('devices.FingerLog') }}">Finger Log</a>
                     </li>
                     
                 </ul>

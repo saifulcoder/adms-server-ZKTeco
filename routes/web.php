@@ -17,8 +17,9 @@ use App\Http\Controllers\AbsensiSholatController;
 use App\Http\Controllers\iclockController;
 
 
-Route::resource('absensi_sholat', AbsensiSholatController::class);
-Route::resource('devices', DeviceController::class);
+Route::get('devices', [DeviceController::class, 'Index'])->name('devices.index');
+Route::get('devices-log', [DeviceController::class, 'DeviceLog'])->name('devices.DeviceLog');
+Route::get('finger-log', [DeviceController::class, 'FingerLog'])->name('devices.FingerLog');
 
 
 // handshake
@@ -29,13 +30,6 @@ Route::post('/iclock/cdata', [iclockController::class, 'receiveRecords']);
 Route::get('/iclock/test', [iclockController::class, 'test']);
 Route::get('/iclock/getrequest', [iclockController::class, 'getrequest']);
 
-
-//tools
-//fingerprint
-// Route::post('/iclock/cdata', 'adms\iclock@receiveRecords');
-// Route::get('/iclock/cdata', 'adms\iclock@checkDevice');
-// Route::get('iclock/getrequest','adms\iclock@getrequest');
-// Route::get('/iclock/test', 'adms\iclock@test');
 
 
 Route::get('/', function () {
