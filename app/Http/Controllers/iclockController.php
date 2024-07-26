@@ -57,7 +57,7 @@ class iclockController extends Controller
         DB::table('finger_log')->insert($log);
     // cek validasi device fingerprint berdasarkan serial number
     $cek = DB::table('devices')->select('id')->where('no_sn','=',$request->SN)->first();
-    if(is_null($cek)){return "ERROR";}
+    //if(is_null($cek)){return "ERROR";}
     try {
         $content = $request->getContent();
         $arr = preg_split('/\\r\\n|\\r|,|\\n/', $content);
@@ -69,27 +69,17 @@ class iclockController extends Controller
             if(!empty(trim($req[0])) ){
                     $jam = date('H:i:s', strtotime($req[1]));
                     // echo $jam;
-                    $jadwal_sholat = DB::table("jadwal_sholat")
-                    ->select("id")
-                    ->where("dari","<=",$jam)
-                    ->where("sampai",">=",$jam)
-                    ->first();
 
                     $nis = trim($req[0]);
                     $data = [];
                     $data['table'] = $request->table;
                     $data['data'] = $content;
-                    $data['id_jadwal_sholat'] = $jadwal_sholat->id;
                     // $data['id_santri_mesin'] =  trim($req[0]);
                     $data['nis_santri'] =  $nis;
                     $data['waktu'] = $req[1];
-                    $data['id_devices'] = $cek->id;
-                    if($jadwal_sholat->id){
-                        DB::table('absensi_sholat')->insert($data);
-                    }
-                    // else{
-                    //     DB::table('absensi_sholat_diluar_jam')->insert($data);
-                    // }
+
+                    DB::table('absensi_sholat')->insert($data);
+
             }
         }
             return "OK: ".$jml;
@@ -103,30 +93,6 @@ class iclockController extends Controller
         }
 
 
-        // if (isset($request->table)) {
-        //     $table = $request->table;
-        // } else {
-        //     $this->doNothing();
-        // }
-        // switch ($table) {
-        //     case 'ATTLOG':
-        //         $this->savetoTable($request);
-        //         $this->logAttendance($request);
-
-        //         return $this->returnOk();
-        //         break;
-        //     case 'ATTPHOTO':
-        //         //receiveOnSitePhoto($request);
-        //         break;
-        //     case 'OPERLOG':
-        //         $this->savetoTable($request);
-        //         $this->receiveOperationLog($request);
-        //         break;
-        //     default:
-        //         $this->doNothing();
-        //         break;
-        // }
-        // return $this->returnOk();
     }
     public function test(Request $request)
     {
