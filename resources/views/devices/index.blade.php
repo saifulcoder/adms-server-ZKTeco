@@ -9,7 +9,6 @@
                 <tr>
                     <th>No</th>
                     <th>Nomor Mesin</th>
-                    <th width="105px">Action</th>
                 </tr>
             </thead>
             <tbody>

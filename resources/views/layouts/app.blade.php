@@ -56,7 +56,6 @@
         columns: [
             {data: 'id', name: 'id'},
             {data: 'no_sn', name: 'no_sn'},
-            {data: 'action', name: 'action', orderable: false, searchable: false},
         ]
     });
 
@@ -68,7 +67,6 @@
         columns: [
             {data: 'id', name: 'id'},
             {data: 'data', name: 'data'},
-            {data: 'action', name: 'action', orderable: false, searchable: false},
         ]
     });
 
@@ -80,7 +78,6 @@
         columns: [
             {data: 'id', name: 'id'},
             {data: 'data', name: 'data'},
-            {data: 'action', name: 'action', orderable: false, searchable: false},
         ]
     });
 

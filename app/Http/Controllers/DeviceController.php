@@ -15,12 +15,6 @@ class DeviceController extends Controller
         $data = Device::select('id','nama','no_sn','lokasi','online');
         if ($request->ajax()) {
             return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function($row){
-                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
-                    return $actionBtn;
-                })
-                ->rawColumns(['action'])
                 ->make(true);
         }
         return view('devices.index');
@@ -31,12 +25,6 @@ class DeviceController extends Controller
         $data = DB::table('device_log')->select('id','data')->get();
         if ($request->ajax()) {
             return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function($row){
-                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
-                    return $actionBtn;
-                })
-                ->rawColumns(['action'])
                 ->make(true);
         }
         return view('devices.log');
@@ -47,11 +35,6 @@ class DeviceController extends Controller
         $data = DB::table('finger_log')->select('id','data')->get();
         if ($request->ajax()) {
             return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function($row){
-                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
-                    return $actionBtn;
-                })
                 ->rawColumns(['action'])
                 ->make(true);
         }

@@ -8,7 +8,6 @@
                 <tr>
                     <th>Id</th>
                     <th>Data</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
