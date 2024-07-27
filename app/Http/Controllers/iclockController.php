@@ -7,12 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class iclockController extends Controller
 {
-        /*
-    * Handle the incoming request.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Response
-    */
+
    public function __invoke(Request $request)
    {
 
@@ -58,8 +53,8 @@ class iclockController extends Controller
     {   
         
         try {
-        $content['data'] = $request->getContent();
-        DB::table('finger_log')->insert($content['data']);
+        $content['data'] = json_encode($request->all());;
+        DB::table('finger_log')->insert($content);
         $arr = preg_split('/\\r\\n|\\r|,|\\n/', $content['data']);
         $tot = count($arr);
 
@@ -70,7 +65,7 @@ class iclockController extends Controller
             DB::table('error_log')->insert($data);
             report($e);
 
-            return "ERROR:".$tot."\n";
+            return "ERROR: ".$tot."\n";
         }
 
 
