@@ -14,8 +14,8 @@ class DeviceController extends Controller
     {
         $data = Device::select('id','nama','no_sn','lokasi','online');
         if ($request->ajax()) {
-            return Datatables::of($data)
-                ->make(true);
+            $data = Device::select('id', 'no_sn');
+            return DataTables::of($data)->make(true);
         }
         return view('devices.index');
     }
