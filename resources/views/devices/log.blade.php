@@ -6,7 +6,7 @@
         <table class="table table-bordered data-table" id="devices">
             <thead>
                 <tr>
-                    <th>No</th>
+                    <th>Id</th>
                     <th>Data</th>
                 </tr>
             </thead>
