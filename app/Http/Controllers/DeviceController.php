@@ -35,7 +35,6 @@ class DeviceController extends Controller
         $data = DB::table('finger_log')->select('id','data')->get();
         if ($request->ajax()) {
             return Datatables::of($data)
-                ->rawColumns(['action'])
                 ->make(true);
         }
         return view('devices.finger');
