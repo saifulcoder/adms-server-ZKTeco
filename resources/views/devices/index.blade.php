@@ -7,15 +7,15 @@
         <table class="table table-bordered data-table" id="devices">
             <thead>
                 <tr>
-                    <th>No</th>
-                    <th>Nomor Mesin</th>
+                    {{-- <th>No</th> --}}
+                    <th>Serial Number</th>
                     <th>Online</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach ($log as $d)
                     <tr>
-                        <td>{{ $d->id }}</td>
+                        {{-- <td>{{ $d->id }}</td> --}}
                         <td>{{ $d->no_sn }}</td>
                         <td>{{ $d->online }}</td>
                     </tr>

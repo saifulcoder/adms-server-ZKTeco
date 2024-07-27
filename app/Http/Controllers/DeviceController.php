@@ -13,14 +13,14 @@ class DeviceController extends Controller
     public function index(Request $request)
     {
         $data['lable'] = "Devices";
-        $data['log'] = DB::table('devices')->select('id','no_sn','online')->get();
+        $data['log'] = DB::table('devices')->select('id','no_sn','online')->orderBy('online', 'DESC')->get();
         return view('devices.index',$data);
     }
 
     public function DeviceLog(Request $request)
     {
         $data['lable'] = "Devices Log";
-        $data['log'] = DB::table('device_log')->select('id','data')->get();
+        $data['log'] = DB::table('device_log')->select('id','data')->orderBy('id','DESC')->get();
         
         return view('devices.log',$data);
     }
@@ -28,7 +28,7 @@ class DeviceController extends Controller
     public function FingerLog(Request $request)
     {
         $data['lable'] = "Finger Log";
-        $data['log'] = DB::table('finger_log')->select('id','data')->get();
+        $data['log'] = DB::table('finger_log')->select('id','data')->orderBy('id','DESC')->get();
         return view('devices.log',$data);
     }
 
