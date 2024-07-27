@@ -1,6 +1,6 @@
 # ADMS (Attendance Device Management System)
 
-ADMS is a comprehensive Attendance Device Management System designed to handle biometric and access control data from various devices. This system is built using Laravel, a PHP framework, and provides functionalities to store and manage user and fingerprint data.
+ADMS is a comprehensive Attendance Device Management System designed to handle biometric and access control data from various devices. This system is built using Laravel, a PHP framework, provides functionalities to store, manage user and fingerprint data.
 
 ## Features
 
@@ -14,7 +14,6 @@ ADMS is a comprehensive Attendance Device Management System designed to handle b
 ![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_8.png)
 
 ![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_9.png)
-
 
 ## Installation
 
@@ -30,34 +29,28 @@ Before you begin, ensure you have the following installed on your system:
 ### Steps
 
 1. **Clone the repository**
-
    ```bash
    git clone https://github.com/saifulcoder/adms-server-ZKTeco.git adms-server
    cd adms-server
    ```
 
 2. **Install dependencies**
-
    ```bash
    composer install
    ```
 
 3. **Copy the `.env` file**
-
    ```bash
    cp .env.example .env
    ```
 
 4. **Generate application key**
-
    ```bash
    php artisan key:generate
    ```
 
 5. **Configure the `.env` file**
-
    Open the `.env` file and set your database credentials and other environment variables:
-
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -68,31 +61,23 @@ Before you begin, ensure you have the following installed on your system:
    ```
 
 6. **Run the migrations**
-
    ```bash
    php artisan migrate
    ```
 
 7. **Serve the application**
-
    ```bash
    php artisan serve
    ```
-
- 
 
 ### Monitoring Device Status
 
 You can monitor the status of devices by querying the `devices` table where the `online` field indicates the last time the device was online.
 
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-```
-
 
 ## Authors
 
 - [@saifulcoder](https://github.com/saifulcoder)
-
