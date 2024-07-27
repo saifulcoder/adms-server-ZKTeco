@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My App</title>
-    <!-- Tautan CSS Bootstrap -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Step-by-Step Tutorial: Implementing Yajra Datatables in Laravel 10 - CodeAndDeploy.com</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -25,7 +27,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('devices.FingerLog') }}">Finger Log</a>
                     </li>
-                    
+
                 </ul>
             </div>
             <span>{{ now() }}</span>
@@ -36,9 +38,54 @@
         @yield('content')
     </div>
 
-    <!-- Tautan JavaScript Bootstrap -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.js"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap5.min.js"></script>
 </body>
+
+<script type="text/javascript">
+  $(function () {
+
+    // Datatables devices
+    var table = $('#devices').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('devices.index') }}",
+        columns: [
+            {data: 'id', name: 'id'},
+            {data: 'no_sn', name: 'no_sn'},
+            {data: 'action', name: 'action', orderable: false, searchable: false},
+        ]
+    });
+
+    // Datatables log
+    var table = $('#devices-log').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('devices.DeviceLog') }}",
+        columns: [
+            {data: 'id', name: 'id'},
+            {data: 'data', name: 'data'},
+            {data: 'action', name: 'action', orderable: false, searchable: false},
+        ]
+    });
+
+    // Finger log
+    var table = $('#fingers-log').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: "{{ route('devices.FingerLog') }}",
+        columns: [
+            {data: 'id', name: 'id'},
+            {data: 'data', name: 'data'},
+            {data: 'action', name: 'action', orderable: false, searchable: false},
+        ]
+    });
+
+  });
+
+</script>
+
 </html>

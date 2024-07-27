@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Yajra\DataTables\Facades\Datatables;
 use Illuminate\Http\Request;
 use App\Models\Device;
 use DB;
@@ -9,21 +10,52 @@ use DB;
 class DeviceController extends Controller
 {
     // Menampilkan daftar device
-    public function index()
-    {   
-        $data['lable'] = "Device";
-        $data['devices'] = Device::all();
-        return view('devices.index', $data);
+    public function index(Request $request)
+    {
+        $data = Device::select('id','nama','no_sn','lokasi','online');
+        if ($request->ajax()) {
+            return Datatables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('devices.index');
     }
-    public function DeviceLog() {
-        $data['lable'] = "Device Log";
-        $data['log'] = DB::table('device_log')->get();
-        return view('devices.log', $data);
+
+    public function DeviceLog(Request $request)
+    {
+        $data = DB::table('device_log')->select('id','data')->get();
+        if ($request->ajax()) {
+            return Datatables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('devices.log');
     }
-    public function FingerLog() {
-        $data['lable'] = "Finger Log";
-        $data['log'] = DB::table('finger_log')->get();
-        return view('devices.log', $data);
+
+    public function FingerLog(Request $request)
+    {
+        $data = DB::table('finger_log')->select('id','data')->get();
+        if ($request->ajax()) {
+            return Datatables::of($data)
+                ->addIndexColumn()
+                ->addColumn('action', function($row){
+                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-success btn-sm">Edit</a> <a href="javascript:void(0)" class="delete btn btn-danger btn-sm">Delete</a>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+        return view('devices.finger');
     }
 
     // // Menampilkan form tambah device
