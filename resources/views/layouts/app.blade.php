@@ -45,44 +45,6 @@
     <script src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap5.min.js"></script>
 </body>
 
-<script type="text/javascript">
-  $(function () {
 
-    // Datatables devices
-    var table = $('#devices').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('devices.index') }}",
-        columns: [
-            {data: 'id', name: 'id'},
-            {data: 'no_sn', name: 'no_sn'},
-        ]
-    });
-
-    // Datatables log
-    var table = $('#devices-log').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('devices.DeviceLog') }}",
-        columns: [
-            {data: 'id', name: 'id'},
-            {data: 'data', name: 'data'},
-        ]
-    });
-
-    // Finger log
-    var table = $('#fingers-log').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: "{{ route('devices.FingerLog') }}",
-        columns: [
-            {data: 'id', name: 'id'},
-            {data: 'data', name: 'data'},
-        ]
-    });
-
-  });
-
-</script>
 
 </html>

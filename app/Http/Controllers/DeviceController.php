@@ -12,32 +12,24 @@ class DeviceController extends Controller
     // Menampilkan daftar device
     public function index(Request $request)
     {
-        $data = Device::select('id','nama','no_sn','lokasi','online');
-        if ($request->ajax()) {
-            $data = Device::select('id', 'no_sn');
-            return DataTables::of($data)->make(true);
-        }
-        return view('devices.index');
+        $data['lable'] = "Devices";
+        $data['log'] = DB::table('devices')->select('id','no_sn','online')->get();
+        return view('devices.index',$data);
     }
 
     public function DeviceLog(Request $request)
     {
-        $data = DB::table('device_log')->select('id','data')->get();
-        if ($request->ajax()) {
-            return Datatables::of($data)
-                ->make(true);
-        }
-        return view('devices.log');
+        $data['lable'] = "Devices Log";
+        $data['log'] = DB::table('device_log')->select('id','data')->get();
+        
+        return view('devices.log',$data);
     }
-
+    
     public function FingerLog(Request $request)
     {
-        $data = DB::table('finger_log')->select('id','data')->get();
-        if ($request->ajax()) {
-            return Datatables::of($data)
-                ->make(true);
-        }
-        return view('devices.finger');
+        $data['lable'] = "Finger Log";
+        $data['log'] = DB::table('finger_log')->select('id','data')->get();
+        return view('devices.log',$data);
     }
 
     // // Menampilkan form tambah device
