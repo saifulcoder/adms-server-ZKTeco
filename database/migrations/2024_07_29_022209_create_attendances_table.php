@@ -20,6 +20,8 @@ return new class extends Migration
             $table->boolean('status3');
             $table->boolean('status4');
             $table->boolean('status5');
+            $table->boolean('status6');
+            $table->boolean('status7');
             $table->timestamps();
         });
     }
