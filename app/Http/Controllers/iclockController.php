@@ -53,7 +53,7 @@ class iclockController extends Controller
     // request absensi
     public function receiveRecords(Request $request)
     {   
-	
+        
         //DB::connection()->enableQueryLog();
         try {
         $content['url'] = json_encode($request->all());
@@ -68,9 +68,9 @@ class iclockController extends Controller
             // $data = preg_split('/\s+/', trim($rey));
             $data = preg_split('/\s+/', trim($rey));
 			$dateTimeString = $data[1].$data[2].$data[3].$data[4];
-            $q['sn'] = $request->all('SN');
-            $q['table'] = $request->all('table');
-            $q['stamp'] = $request->all('Stamp');
+            $q['sn'] = $request->input('SN');
+            $q['table'] = $request->input('table');
+            $q['stamp'] = $request->input('Stamp');
             $q['employee_id'] = $data[0];
             $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
             $q['status1'] = (bool) $data[5];
