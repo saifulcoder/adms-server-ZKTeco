@@ -16,37 +16,38 @@ class iclockController extends Controller
    }
 
     // handshake
-    public function handshake(Request $request)
-    {
-        $data['url'] = $request->all();
-        $data["data"] = json_encode($request->getContent());
-        $data["sn"] = $request->SN;
-        $data["option"] = $request->option;
-        DB::table('device_log')->insert($data);
+public function handshake(Request $request)
+{
+    $data = [
+        'url' => json_encode($request->all()),
+        'data' => $request->getContent(),
+        'sn' => $request->input('SN'),
+        'option' => $request->input('option'),
+    ];
+    DB::table('device_log')->insert($data);
 
-        // update status device
-        DB::table('devices')->updateOrInsert(
-            ['no_sn' => $request->SN],
-            ['online' => now()]
-        );
-            $r = "GET OPTION FROM: ".$request->SN." \n\r
-            Stamp=9999 \n\r
-            OpStamp=".strtotime('now')." \n\r
-            ErrorDelay=60 \n\r
-            Delay=30 \n\r
-            ResLogDay=18250 \n\r
-            ResLogDelCount=10000 \n\r
-            ResLogCount=50000 \n\r
-            TransTimes=00:00;14:05 \n\r
-            TransInterval=1 \n\r
-            TransFlag=1111000000 \n\r
-            Realtime=1 \n\r
-            Encrypt=0";
-            $r = trim(preg_replace('/\t+/', '', $r));
-        //$r = "GET OPTION FROM:%s{$request->SN}\nStamp=".strtotime('now')."\nOpStamp=1565089939\nErrorDelay=30\nDelay=10\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nTimeZone=7\nRealtime=1\nEncrypt=0\n";
+    // update status device
+    DB::table('devices')->updateOrInsert(
+        ['no_sn' => $request->input('SN')],
+        ['online' => now()]
+    );
 
-        return $r;
-    }
+    $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
+         "Stamp=9999\r\n" .
+         "OpStamp=" . time() . "\r\n" .
+         "ErrorDelay=60\r\n" .
+         "Delay=30\r\n" .
+         "ResLogDay=18250\r\n" .
+         "ResLogDelCount=10000\r\n" .
+         "ResLogCount=50000\r\n" .
+         "TransTimes=00:00;14:05\r\n" .
+         "TransInterval=1\r\n" .
+         "TransFlag=1111000000\r\n" .
+         "Realtime=1\r\n" .
+         "Encrypt=0";
+
+    return $r;
+}
     // implementasi https://docs.nufaza.com/docs/devices/zkteco_attendance/push_protocol/
     // setting timezone
 
@@ -73,11 +74,11 @@ class iclockController extends Controller
             $q['stamp'] = $request->input('Stamp');
             $q['employee_id'] = $data[0];
             $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
-            $q['status1'] = (bool) $data[5];
-            $q['status2'] = (bool) $data[6];
-            $q['status3'] = isset($data[7]) ? (bool) $data[7] : false;
-            $q['status4'] = isset($data[8]) ? (bool) $data[8] : false;
-            $q['status5'] = isset($data[9]) ? (bool) $data[9] : false;
+            $q['status1'] = $data[5];
+            $q['status2'] = $data[6];
+            $q['status3'] = $data[7];
+            $q['status4'] = $data[8];
+            $q['status5'] = $data[9];
             $q['created_at'] = now();
             $q['updated_at'] = now();
             //dd($q);
