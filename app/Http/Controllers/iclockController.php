@@ -65,16 +65,18 @@ class iclockController extends Controller
         foreach ($arr as $rey) {
             // $data = preg_split('/\s+/', trim($rey));
             $data = preg_split('/\s+/', trim($rey));
-
+            dd($data);
             if (count($data) == 7) {
-                Attendance::create([
+                DB::table('attendances')->insert([
                     'employee_id' => $data[0],
                     'timestamp' => Carbon::createFromFormat('Y-m-d H:i:s', $data[1] . ' ' . $data[2]),
                     'status1' => (bool) $data[3],
                     'status2' => (bool) $data[4],
                     'status3' => (bool) $data[5],
                     'status4' => (bool) $data[6],
-                    'status5' => (bool) $data[7], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
+                    'status5' => (bool) $data[6], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
             dd(DB::getQueryLog());
