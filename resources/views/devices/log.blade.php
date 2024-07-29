@@ -7,6 +7,7 @@
             <thead>
                 <tr>
                     <th>Id</th>
+                    <th>Url</th>
                     <th>Data</th>
                 </tr>
             </thead>
@@ -14,8 +15,8 @@
                 @foreach ($log as $d)
                     <tr>
                         <td>{{ $d->id }}</td>
-                        <td>{{ $d->data }}</td>
                         <td>{{ $d->url }}</td>
+                        <td>{{ $d->data }}</td>
                     </tr>
                 @endforeach
             </tbody>
