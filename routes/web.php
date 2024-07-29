@@ -20,6 +20,7 @@ use App\Http\Controllers\iclockController;
 Route::get('devices', [DeviceController::class, 'Index'])->name('devices.index');
 Route::get('devices-log', [DeviceController::class, 'DeviceLog'])->name('devices.DeviceLog');
 Route::get('finger-log', [DeviceController::class, 'FingerLog'])->name('devices.FingerLog');
+Route::get('attendance', [DeviceController::class, 'Attendance'])->name('devices.Attendance');
 
 
 // handshake

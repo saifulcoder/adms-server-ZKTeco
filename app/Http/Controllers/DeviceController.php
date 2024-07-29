@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Yajra\DataTables\Facades\Datatables;
 use Illuminate\Http\Request;
 use App\Models\Device;
+use App\Models\Attendance;
 use DB;
 
 class DeviceController extends Controller
@@ -30,6 +31,13 @@ class DeviceController extends Controller
         $data['lable'] = "Finger Log";
         $data['log'] = DB::table('finger_log')->select('id','data')->orderBy('id','DESC')->get();
         return view('devices.log',$data);
+    }
+    public function Attendance() {
+       //$attendances = Attendance::latest('timestamp')->orderBy('id','DESC')->paginate(15);
+       $attendances = DB::table('attendances')->select('id','sn','table','stamp','employee_id','timestamp','status1','status2','status3','status4','status5')->orderBy('id','DESC')->paginate(15);
+
+        return view('devices.attendance', compact('attendances'));
+        
     }
 
     // // Menampilkan form tambah device
