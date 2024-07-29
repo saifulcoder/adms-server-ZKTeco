@@ -53,17 +53,18 @@ class iclockController extends Controller
     // request absensi
     public function receiveRecords(Request $request)
     {   
-        
+        DB::connection()->enableQueryLog();
         try {
         $content['url'] = json_encode($request->all());
         $content['data'] = json_encode($request->getContent());;
         DB::table('finger_log')->insert($content);
-        //$arr = preg_split('/\\r\\n|\\r|,|\\n/', $content['data']);
-        $arr = explode("\n", $content['data']);
+        $arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
+        //$arr = explode("\n", $content['data']);
         $tot = count($arr);
 
-        foreach ($arr as $line) {
-            $data = preg_split('/\s+/', trim($line));
+        foreach ($arr as $rey) {
+            // $data = preg_split('/\s+/', trim($rey));
+            $data = preg_split('/\s+/', trim($rey));
 
             if (count($data) == 7) {
                 Attendance::create([
@@ -76,6 +77,7 @@ class iclockController extends Controller
                     'status5' => (bool) $data[7], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
                 ]);
             }
+            dd(DB::getQueryLog());
         }
 
             return "OK: ".$tot;
