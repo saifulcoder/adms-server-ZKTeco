@@ -53,6 +53,7 @@ class iclockController extends Controller
     // request absensi
     public function receiveRecords(Request $request)
     {   
+	
         DB::connection()->enableQueryLog();
         try {
         $content['url'] = json_encode($request->all());
@@ -61,40 +62,35 @@ class iclockController extends Controller
         $arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
         //$arr = explode("\n", $content['data']);
         $tot = count($arr);
+		
 
         foreach ($arr as $rey) {
             // $data = preg_split('/\s+/', trim($rey));
             $data = preg_split('/\s+/', trim($rey));
-            // dd($data);
+            //dd($data);
+			//$dateTimeString = $data[1] . ' ' . str_replace(' ', '', $data[2] . ':' . $data[3] . ':' . $data[4]);
+			$dateTimeString = $data[1].$data[2].$data[3].$data[4];
 
-                DB::table('attendances')->insert([
-                    'employee_id' => $data[0],
-                    'timestamp' => Carbon::createFromFormat('Y-m-d H:i:s', $data[1] . ' ' . $data[2]),
-                    'status1' => (bool) $data[3],
-                    'status2' => (bool) $data[4],
-                    'status3' => (bool) $data[5],
-                    'status4' => (bool) $data[6],
-                    'status5' => (bool) $data[7], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
-                    'status6' => (bool) $data[8], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
-                    'status7' => (bool) $data[9], // Menggunakan data[6] karena data asli hanya memiliki 6 kolom
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            
+            $q['employee_id'] = $data[0];
+            $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
+            $q['status1'] = (bool) $data[5];
+            $q['status2'] = (bool) $data[6];
+            $q['status3'] = isset($data[7]) ? (bool) $data[7] : false;
+            $q['status4'] = isset($data[8]) ? (bool) $data[8] : false;
+            $q['status5'] = isset($data[9]) ? (bool) $data[9] : false;
+            $q['created_at'] = now();
+            $q['updated_at'] = now();
+            //dd($q);
+			DB::table('attendances')->insert($q);
             // dd(DB::getQueryLog());
         }
-
             return "OK: ".$tot;
         } catch (Throwable $e) {
             $data['error'] = $e;
-
             DB::table('error_log')->insert($data);
             report($e);
-
             return "ERROR: ".$tot."\n";
         }
-
-
     }
     public function test(Request $request)
     {
