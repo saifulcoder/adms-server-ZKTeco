@@ -15,6 +15,7 @@
                     <tr>
                         <td>{{ $d->id }}</td>
                         <td>{{ $d->data }}</td>
+                        <td>{{ $d->url }}</td>
                     </tr>
                 @endforeach
             </tbody>

@@ -21,7 +21,7 @@ class DeviceController extends Controller
     public function DeviceLog(Request $request)
     {
         $data['lable'] = "Devices Log";
-        $data['log'] = DB::table('device_log')->select('id','data')->orderBy('id','DESC')->get();
+        $data['log'] = DB::table('device_log')->select('id','data','url')->orderBy('id','DESC')->get();
         
         return view('devices.log',$data);
     }
@@ -29,7 +29,7 @@ class DeviceController extends Controller
     public function FingerLog(Request $request)
     {
         $data['lable'] = "Finger Log";
-        $data['log'] = DB::table('finger_log')->select('id','data')->orderBy('id','DESC')->get();
+        $data['log'] = DB::table('finger_log')->select('id','data','url')->orderBy('id','DESC')->get();
         return view('devices.log',$data);
     }
     public function Attendance() {
