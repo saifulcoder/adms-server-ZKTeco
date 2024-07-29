@@ -50,6 +50,9 @@
                         <a class="nav-link" href="{{ route('devices.index') }}">Device</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('devices.Attendance') }}">Attendance</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('devices.DeviceLog') }}">Device Log</a>
                     </li>
                     <li class="nav-item">

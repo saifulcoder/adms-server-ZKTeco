@@ -13,15 +13,16 @@ return new class extends Migration
     {
      Schema::create('attendances', function (Blueprint $table) {
             $table->id();
+            $table->string('sn');
+            $table->string('table');
+            $table->string('stamp');
             $table->integer('employee_id');
             $table->dateTime('timestamp');
-            $table->boolean('status1');
-            $table->boolean('status2');
-            $table->boolean('status3');
-            $table->boolean('status4');
-            $table->boolean('status5');
-            $table->boolean('status6');
-            $table->boolean('status7');
+            $table->boolean('status1')->nullable();
+            $table->boolean('status2')->nullable();
+            $table->boolean('status3')->nullable();
+            $table->boolean('status4')->nullable();
+            $table->boolean('status5')->nullable();
             $table->timestamps();
         });
     }
