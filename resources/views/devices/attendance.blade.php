@@ -33,11 +33,11 @@
                         <td>{{ $attendance->sn }}</td>
                         <td>{{ $attendance->employee_id }}</td>
                         <td>{{ $attendance->timestamp }}</td>
-                        <td>{{ $attendance->status1 ? 'Ya' : 'Tidak' }}</td>
-                        <td>{{ $attendance->status2 ? 'Ya' : 'Tidak' }}</td>
-                        <td>{{ $attendance->status3 ? 'Ya' : 'Tidak' }}</td>
-                        <td>{{ $attendance->status4 ? 'Ya' : 'Tidak' }}</td>
-                        <td>{{ $attendance->status5 ? 'Ya' : 'Tidak' }}</td>
+                        <td>{{ $attendance->status1 }}</td>
+                        <td>{{ $attendance->status2 }}</td>
+                        <td>{{ $attendance->status3 }}</td>
+                        <td>{{ $attendance->status4 }}</td>
+                        <td>{{ $attendance->status5 }}</td>
 
                     </tr>
                 @endforeach
