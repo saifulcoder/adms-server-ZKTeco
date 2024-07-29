@@ -54,7 +54,7 @@ class iclockController extends Controller
     public function receiveRecords(Request $request)
     {   
 	
-        DB::connection()->enableQueryLog();
+        //DB::connection()->enableQueryLog();
         try {
         $content['url'] = json_encode($request->all());
         $content['data'] = json_encode($request->getContent());;
@@ -67,10 +67,10 @@ class iclockController extends Controller
         foreach ($arr as $rey) {
             // $data = preg_split('/\s+/', trim($rey));
             $data = preg_split('/\s+/', trim($rey));
-            //dd($data);
-			//$dateTimeString = $data[1] . ' ' . str_replace(' ', '', $data[2] . ':' . $data[3] . ':' . $data[4]);
 			$dateTimeString = $data[1].$data[2].$data[3].$data[4];
-
+            $q['sn'] = $request->all('SN');
+            $q['table'] = $request->all('table');
+            $q['stamp'] = $request->all('Stamp');
             $q['employee_id'] = $data[0];
             $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
             $q['status1'] = (bool) $data[5];
