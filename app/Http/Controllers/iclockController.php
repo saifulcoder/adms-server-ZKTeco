@@ -61,27 +61,33 @@ public function handshake(Request $request)
         $content['data'] = json_encode($request->getContent());;
         DB::table('finger_log')->insert($content);
         try {
-            $arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
-            //$arr = explode("\n", $content['data']);
+            //$arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
+            $arr = explode("\n", $content['data']);
             $tot = count($arr);
             foreach ($arr as $rey) {
                 // $data = preg_split('/\s+/', trim($rey));
-                $data = preg_split('/\s+/', trim($rey));
-                $dateTimeString = $data[1].$data[2].$data[3].$data[4];
-                $q['sn'] = $request->input('SN');
-                $q['table'] = $request->input('table');
-                $q['stamp'] = $request->input('Stamp');
-                $q['employee_id'] = $data[0];
-                $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
-                $q['status1'] = $data[5];
-                $q['status2'] = $data[6];
-                $q['status3'] = $data[7];
-                $q['status4'] = $data[8];
-                $q['status5'] = $data[9];
-                $q['created_at'] = now();
-                $q['updated_at'] = now();
-                //dd($q);
-                DB::table('attendances')->insert($q);
+                if(substr($rey, 0, 5) == "OPLOG"){
+                    $rey = preg_replace('OPLOG ','',$rey);
+                }
+                if(substr($rey, 0, 2) !== "FP"){
+                    // $data = preg_split('/\s+/', trim($rey));
+                    $data = explode("\t",$rey);
+                    $dateTimeString = $data[1].$data[2].$data[3].$data[4];
+                    $q['sn'] = $request->input('SN');
+                    $q['table'] = $request->input('table');
+                    $q['stamp'] = $request->input('Stamp');
+                    $q['employee_id'] = $data[0];
+                    $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
+                    $q['status1'] = $data[5] ?? null;
+                    $q['status2'] = $data[6] ?? null;
+                    $q['status3'] = $data[7] ?? null;
+                    $q['status4'] = $data[8] ?? null;
+                    $q['status5'] = $data[9] ?? null;
+                    $q['created_at'] = now();
+                    $q['updated_at'] = now();
+                    //dd($q);
+                    DB::table('attendances')->insert($q);
+                }
                 // dd(DB::getQueryLog());
             }
             return "OK: ".$tot;
