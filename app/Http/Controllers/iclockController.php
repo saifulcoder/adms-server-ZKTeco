@@ -67,7 +67,7 @@ public function handshake(Request $request)
             foreach ($arr as $rey) {
                 // $data = preg_split('/\s+/', trim($rey));
                 if(substr($rey, 0, 5) == "OPLOG"){
-                    $data = preg_replace('OPLOG ','',$rey);
+                    $rey = preg_replace('OPLOG ','',$rey);
                 }
                 if(substr($rey, 0, 2) !== "FP"){
                     // $data = preg_split('/\s+/', trim($rey));
