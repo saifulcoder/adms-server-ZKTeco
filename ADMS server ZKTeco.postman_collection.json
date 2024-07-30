@@ -1,0 +1,137 @@
+{
+	"info": {
+		"_postman_id": "a67ae184-1ecb-4afb-bb91-cd4aa19384e0",
+		"name": "ADMS server ZKTeco",
+		"description": "[https://github.com/saifulcoder/adms-server-ZKTeco](https://github.com/saifulcoder/adms-server-ZKTeco)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15230299"
+	},
+	"item": [
+		{
+			"name": "attendance record",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "1\t2024-07-28 01:25:24\t0\t1\t\t0\t0\t\r\n1\t2024-07-28 10:41:21\t0\t1\t\t0\t0\t\r\n4\t2024-07-28 10:41:31\t0\t1\t\t0\t0\t\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/iclock/cdata?SN=BOCK200961014&table=ATTLOG&Stamp=9999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"iclock",
+						"cdata"
+					],
+					"query": [
+						{
+							"key": "SN",
+							"value": "BOCK200961014"
+						},
+						{
+							"key": "table",
+							"value": "ATTLOG"
+						},
+						{
+							"key": "Stamp",
+							"value": "9999"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Initialization",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/iclock/cdata?SN=BOCK200961014&options=all&language=69&pushver=2.4.0&DeviceType=middle%20east&PushOptionsFlag=1",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"iclock",
+						"cdata"
+					],
+					"query": [
+						{
+							"key": "SN",
+							"value": "BOCK200961014"
+						},
+						{
+							"key": "options",
+							"value": "all"
+						},
+						{
+							"key": "language",
+							"value": "69"
+						},
+						{
+							"key": "pushver",
+							"value": "2.4.0"
+						},
+						{
+							"key": "DeviceType",
+							"value": "middle%20east"
+						},
+						{
+							"key": "PushOptionsFlag",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "operationLog record",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "OPLOG 13\t0\t2024-03-12 11:03:28\t0\t0\t0\t0\r\nOPLOG 0\t0\t2024-03-12 11:03:48\t0\t0\t0\t0\r\nOPLOG 4\t0\t2024-03-12 11:03:53\t0\t0\t0\t0\r\nOPLOG 0\t0\t2024-05-07 09:49:39\t0\t0\t0\t0\r\nOPLOG 0\t0\t2024-05-08 04:30:58\t0\t0\t0\t0\r\nOPLOG 1\t0\t2024-05-08 04:32:42\t0\t0\t0\t0\r\nOPLOG 0\t0\t2024-06-13 12:43:08\t0\t0\t0\t0\r\nOPLOG 4\t0\t2024-06-13 12:44:02\t0\t0\t0\t0\r\nOPLOG 4\t0\t2024-06-13 12:46:18\t0\t0\t0\t0\r\nOPLOG 4\t0\t2024-06-13 12:49:37\t0\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:22\t26\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:23\t186\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:24\t299\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:25\t300\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:26\t301\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:27\t302\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:28\t303\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:29\t305\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:30\t313\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:31\t330\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:32\t347\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:22\t348\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:23\t349\t0\t0\t0\r\nOPLOG 5\t0\t2024-06-13 12:51:24\t350\t0\t0\t0\r\nOPLOG 4\t0\t2024-06-13 12:52:38\t0\t0\t0\t0\r\nOPLOG 30\t0\t2024-06-13 12:55:40\t1\t0\t0\t0\r\nOPLOG 6\t0\t2024-06-13 12:55:41\t1\t0\t0\t906\r\nFP PIN=1\tFID=0\tSize=440\tValid=1\tTMP=ocoYgZ6nVgELiKpaARWTJERBGG4rEAEIS64xwRA\\/vyTBCTm0TkELJ8ZSAQ+kHUxBCxCqTUEQFzFDQR0xvEVB\r\nysRwE4YDcfAQxEn0HBFXMXI0EIXD4awQlCKnGBEx3OHAEZO0g9AQgtUTEBCy2eIAEM1B5ZwQyIHBPBDtEmhMsRD\tjw2VqbnXAwl5haGx0BAgMD8DBWqG67XMEod66wH5WoameZ3EEof7bGcB+VqGJnGNsAgyh7rjAflKheIxbZgELE6HshcB+TqJXnM9yDBUdICAdwH5MokV5mTYcoZ2YwH5KolR1dTQpoSqHwH5JpXNTVTVHZsB+SaVzRDZGV2YiwH5KpVQmRUZ2ZSPAfkmlVTVUNnhlI8DBRaVjVDN3lVXAwUSlRTQ1Z3ZWwMI7pFRVZ2VnwMM1oTZoK8Ei4AAAAAAAAAAAAA==\r\nOPLOG 6\t0\t2024-06-13 12:55:42\t1\t0\t1\t1218\r\nFP PIN=1\tFID=1\tSize=332\tValid=1\tTMP=ocoPgJfHK0EPdUcJgQdarDSBBA04QUEDgUo\\/AQaIRzpBBhRMJMEYZj8VgQlsoAgBC3ghJQEIhCofQQl\\/Ly\\/BCX2cQ0EIhstaQQWQoE7BCIUPFeTBD8IWwH4Joqq5lxPAfgehuakPgsB+BKHKmQ6CEMB+AaTLqaiImAzAfnWlzLq4mId5wH50pbq8yYmHecB+c6WqvbqKmHfAfnClyrvLmqpnDcB+bqXLrcuqqoYPwH5qpdy927q5phTAfmal3s\\/sm6q3wH5hZm10BqPcu6qowH5cYGhyBqPtq6qowH5VWF5sB6L+uqgcwMFQUFsWopq4heAAAAAAAAA=\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/iclock/cdata?SN=BOCK200961014&table=OPERLOG&Stamp=9999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"iclock",
+						"cdata"
+					],
+					"query": [
+						{
+							"key": "SN",
+							"value": "BOCK200961014"
+						},
+						{
+							"key": "table",
+							"value": "OPERLOG"
+						},
+						{
+							"key": "Stamp",
+							"value": "9999"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
