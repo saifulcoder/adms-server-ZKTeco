@@ -8,12 +8,14 @@ ADMS is a comprehensive Attendance Device Management System designed to handle b
 - Device status monitoring
 
 ## Screenshots
-
+Device Connected
 ![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_7.png)
-
+Attendance Recorded
 ![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_8.png)
-
+Device Log
 ![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_9.png)
+Attendence Log
+![App Screenshot](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/Screenshot_10.png)
 
 ## Installation
 
@@ -74,10 +76,27 @@ Before you begin, ensure you have the following installed on your system:
 
 You can monitor the status of devices by querying the `devices` table where the `online` field indicates the last time the device was online.
 
-## License
+## Postman Collection
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+For testing and interacting with the API endpoints, you can use the provided Postman collection:
+[Postman Collection](https://github.com/saifulcoder/adms-server-ZKTeco/blob/main/ADMS server ZKTeco.postman_collection.json)
+
 
 ## Authors
 
 - [@saifulcoder](https://github.com/saifulcoder)
+
+## For Improvement and project
+
+contact us saiful.coder@gmail.com
+
+## Contributing
+
+This project helps you and you want to help keep it going? Buy me a coffee:
+<br> <a href="https://www.buymeacoffee.com/saifulcoder" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 61px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a><br>
+or via <br>
+<a href="https://saweria.co/saifulcoder">https://saweria.co/saifulcoder</a>
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

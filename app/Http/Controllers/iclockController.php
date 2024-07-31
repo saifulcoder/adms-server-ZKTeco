@@ -58,36 +58,48 @@ public function handshake(Request $request)
         
         //DB::connection()->enableQueryLog();
         $content['url'] = json_encode($request->all());
-        $content['data'] = json_encode($request->getContent());;
+        $content['data'] = $request->getContent();;
         DB::table('finger_log')->insert($content);
         try {
-            //$arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
-            $arr = explode("\n", $content['data']);
-            $tot = count($arr);
+            // $post_content = $request->getContent();
+            //$arr = explode("\n", $post_content);
+            $arr = preg_split('/\\r\\n|\\r|,|\\n/', $request->getContent());
+            //$tot = count($arr);
+            $tot = 0;
+            //operation log
+            if($request->input('table') == "OPERLOG"){
+                // $tot = count($arr) - 1;
+                foreach ($arr as $rey) {
+                    if(isset($rey)){
+                        $tot++;
+                    }
+                }
+                return "OK: ".$tot;
+            }
+            //attendance
             foreach ($arr as $rey) {
                 // $data = preg_split('/\s+/', trim($rey));
-                if(substr($rey, 0, 5) == "OPLOG"){
-                    $rey = preg_replace('OPLOG ','',$rey);
+                if(empty($rey)){
+                    continue;
                 }
-                if(substr($rey, 0, 2) !== "FP"){
                     // $data = preg_split('/\s+/', trim($rey));
                     $data = explode("\t",$rey);
-                    $dateTimeString = $data[1].$data[2].$data[3].$data[4];
+                    //dd($data);
                     $q['sn'] = $request->input('SN');
                     $q['table'] = $request->input('table');
                     $q['stamp'] = $request->input('Stamp');
                     $q['employee_id'] = $data[0];
-                    $q['timestamp'] = Carbon::createFromFormat('Y-m-d H:i:s', $dateTimeString);
-                    $q['status1'] = $data[5] ?? null;
-                    $q['status2'] = $data[6] ?? null;
-                    $q['status3'] = $data[7] ?? null;
-                    $q['status4'] = $data[8] ?? null;
-                    $q['status5'] = $data[9] ?? null;
+                    $q['timestamp'] = $data[1];
+                    $q['status1'] = $this->validateAndFormatInteger($data[2]);
+                    $q['status2'] = $this->validateAndFormatInteger($data[3]);
+                    $q['status3'] = $this->validateAndFormatInteger($data[4]);
+                    $q['status4'] = $this->validateAndFormatInteger($data[5]);
+                    $q['status5'] = $this->validateAndFormatInteger($data[6]);
                     $q['created_at'] = now();
                     $q['updated_at'] = now();
                     //dd($q);
                     DB::table('attendances')->insert($q);
-                }
+                    $tot++;
                 // dd(DB::getQueryLog());
             }
             return "OK: ".$tot;
@@ -108,6 +120,11 @@ public function handshake(Request $request)
         // $r = "GET OPTION FROM: ".$request->SN."\nStamp=".strtotime('now')."\nOpStamp=".strtotime('now')."\nErrorDelay=60\nDelay=30\nResLogDay=18250\nResLogDelCount=10000\nResLogCount=50000\nTransTimes=00:00;14:05\nTransInterval=1\nTransFlag=1111000000\nRealtime=1\nEncrypt=0";
 
         return "OK";
+    }
+    private function validateAndFormatInteger($value)
+    {
+        return isset($value) && $value !== '' ? (int)$value : null;
+        // return is_numeric($value) ? (int) $value : null;
     }
 
 }
