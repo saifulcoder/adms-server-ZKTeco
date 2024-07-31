@@ -90,11 +90,11 @@ public function handshake(Request $request)
                     $q['stamp'] = $request->input('Stamp');
                     $q['employee_id'] = $data[0];
                     $q['timestamp'] = $data[1];
-                    $q['status1'] = $this->validateAndFormatInteger($data[2]);
-                    $q['status2'] = $this->validateAndFormatInteger($data[3]);
-                    $q['status3'] = $this->validateAndFormatInteger($data[4]);
-                    $q['status4'] = $this->validateAndFormatInteger($data[5]);
-                    $q['status5'] = $this->validateAndFormatInteger($data[6]);
+                    $q['status1'] = $this->validateAndFormatInteger($data[2] ?? null);
+                    $q['status2'] = $this->validateAndFormatInteger($data[3] ?? null);
+                    $q['status3'] = $this->validateAndFormatInteger($data[4] ?? null);
+                    $q['status4'] = $this->validateAndFormatInteger($data[5] ?? null);
+                    $q['status5'] = $this->validateAndFormatInteger($data[6] ?? null);
                     $q['created_at'] = now();
                     $q['updated_at'] = now();
                     //dd($q);
