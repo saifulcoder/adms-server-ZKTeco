@@ -1,8 +1,8 @@
-@extends('layouts.app')  {{-- Asumsikan Anda memiliki layout utama --}}
+@extends('layouts.app')
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Attendance</h2>
+    <h2 class="mb-4">Checadas</h2>
 
     @if(session('success'))
         <div class="alert alert-success">

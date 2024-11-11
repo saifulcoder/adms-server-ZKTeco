@@ -15,10 +15,7 @@ return new class extends Migration
         $table->id();
         $table->text('data');
         $table->text('url');
-        // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
         $table->timestamp('created_at')->useCurrent();
-
-        // Opsi 2: Menggunakan CURRENT_TIMESTAMP saat insert dan update
         $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         
         });
@@ -29,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::dropIfExists('finger_log');
     }
 };

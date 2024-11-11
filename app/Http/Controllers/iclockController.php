@@ -102,7 +102,13 @@ public function handshake(Request $request)
                     $tot++;
                 // dd(DB::getQueryLog());
             }
-            return "OK: ".$tot;
+            return "
+            DATA UPDATE USERINFO
+            PIN=789012\tName=Alice\tPri=0\tPasswd=\tCard=[01 02 03 04 05]\tGrp=1\tTZ=1
+
+            DATA UPDATE FINGERTMP PIN=789012\tFID=1\tValid=1\tTMP=ABC123FingerprintTemplate
+
+            OK: ".$tot;
         } catch (Throwable $e) {
             $data['error'] = $e;
             DB::table('error_log')->insert($data);

@@ -7,16 +7,16 @@
             @csrf
             @method('put')
             <div class="form-group">
-                <label for="nama">Nama</label>
-                <input type="text" name="nama" class="form-control" id="nama" value="{{ $device->nama }}">
+                <label for="name">Nombre</label>
+                <input type="text" name="name" class="form-control" id="name" value="{{ $device->name }}">
             </div>
             <div class="form-group">
-                <label for="no_sn">Nomor Serial</label>
+                <label for="no_sn">Numero de Serie</label>
                 <input type="text" name="no_sn" class="form-control" id="no_sn" value="{{ $device->no_sn }}">
             </div>
             <div class="form-group">
-                <label for="lokasi">Lokasi</label>
-                <input type="text" name="lokasi" class="form-control" id="lokasi" value="{{ $device->lokasi }}">
+                <label for="idreloj">ID Reloj</label>
+                <input type="text" name="idreloj" class="form-control" id="idreloj" value="{{ $device->idreloj }}">
             </div>
             <div class="form-group">
                 <label for="online">Online</label>
