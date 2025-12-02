@@ -45,4 +45,21 @@ class Handler extends ExceptionHandler
             ]);
         });
     }
+
+    public function report(Throwable $exception)
+    {
+        // Check if the exception is a 404 error (route not found)
+        if ($exception instanceof NotFoundHttpException) {
+            $request = request();
+            Log::channel('404_errors')->warning('404 Not Found', [
+                'url' => $request->url(),
+                'method' => $request->method(),
+                'ip' => $request->ip(),
+                'user_agent' => $request->header('User-Agent'),
+                'time' => now(),
+            ]);
+        }
+
+        parent::report($exception);
+    }
 }

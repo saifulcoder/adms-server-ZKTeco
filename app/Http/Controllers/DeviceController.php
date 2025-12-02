@@ -2,10 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DeviceLog;
+use Log;
 use Yajra\DataTables\Facades\Datatables;
+use App\Services\CommandIdService;
 use Illuminate\Http\Request;
+use App\Models\Agente;
 use App\Models\Device;
+use App\Models\Oficina;
 use App\Models\Attendance;
+use App\Models\Command;
+use App\Models\FingerLog;
 use DB;
 
 class DeviceController extends Controller
@@ -13,83 +20,133 @@ class DeviceController extends Controller
     // Menampilkan daftar device
     public function index(Request $request)
     {
-        $data['lable'] = "Devices";
-        $data['log'] = DB::table('devices')->select('id','no_sn','online')->orderBy('online', 'DESC')->get();
+        $data['title'] = "Biometric Devices";
+        $data['log'] = Device::all();
         return view('devices.index',$data);
     }
 
     public function DeviceLog(Request $request)
     {
-        $data['lable'] = "Devices Log";
-        $data['log'] = DB::table('device_log')->select('id','data','url')->orderBy('id','DESC')->get();
-        
-        return view('devices.log',$data);
+        $title = "Devices Log";
+        $deviceLogs = DeviceLog::orderBy('id', 'DESC')->paginate(40);
+        return view('devices.log', compact('deviceLogs', 'title'));
     }
     
     public function FingerLog(Request $request)
     {
-        $data['lable'] = "Finger Log";
-        $data['log'] = DB::table('finger_log')->select('id','data','url')->orderBy('id','DESC')->get();
-        return view('devices.log',$data);
+        $title = "Finger Log";
+        $deviceLogs = FingerLog::orderBy('id', 'DESC')->paginate(40);
+        return view('devices.log', compact('deviceLogs', 'title'));
     }
-    public function Attendance() {
-       //$attendances = Attendance::latest('timestamp')->orderBy('id','DESC')->paginate(15);
-       $attendances = DB::table('attendances')->select('id','sn','table','stamp','employee_id','timestamp','status1','status2','status3','status4','status5')->orderBy('id','DESC')->paginate(15);
 
-        return view('devices.attendance', compact('attendances'));
+    public function fingerprints(Request $request){
+        $title = "Fingerprints captured";
+        $deviceLogs = FingerLog::where('data', 'like', '%FP PIN%')
+            ->orderBy('updated_at', 'ASC')
+            ->paginate(40)
+            ->through(function ($log) {
+                preg_match('/FP PIN=(\d+)/', $log->data, $matches);
+                $log->idagente = $matches[1] ?? null; // Extracted FP PIN value
+                $data = json_decode($log->url);
+                $log->employee = Agente::where('idagente', $log->idagente)->first();
+                $log->device = Device::where('serial_number', $data->SN)->first();
+                return $log;
+            });
+        return view('devices.fingerprints', compact('deviceLogs','title'));
+    }
+
+    public function Attendance(Request $request) {
+        $selectedOficina = $request->query('selectedOficina');
+        if ($selectedOficina) {
+            $attendances = Attendance::where('idoficina', $selectedOficina)
+                ->orderBy('timestamp', 'DESC')
+                ->paginate(40);
+        } else {
+            $attendances = Attendance::orderBy('timestamp', 'DESC')
+                ->paginate(40);
+            $paginator = $query->paginate(100, ['*'], 'page', $page)
+                    ->appends(request()->except('page'));
+        }
+        $oficinas = Oficina::all();
+        return view('devices.attendance', compact('attendances', 'oficinas', 'selectedOficina'));
         
     }
 
-    // // Menampilkan form tambah device
-    // public function create()
-    // {
-    //     return view('devices.create');
-    // }
+    public function create()
+    {
+        return view('devices.create');
+    }
 
-    // // Menyimpan device baru ke database
-    // public function store(Request $request)
-    // {
-    //     $device = new Device();
-    //     $device->nama = $request->input('nama');
-    //     $device->no_sn = $request->input('no_sn');
-    //     $device->lokasi = $request->input('lokasi');
-    //     $device->save();
+    public function store(Request $request)
+    {
+        $device = new Device();
+        $device->name = $request->input('name');
+        $device->serial_number = $request->input('no_sn');
+        $device->idreloj = $request->input('idreloj');
+        $device->save();
 
-    //     return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan!');
-    // }
+         return redirect()->route('devices.index')->with('success', 'Biometrico actualizado correctamente');
+    }
 
-    // // Menampilkan detail device
-    // public function show($id)
-    // {
-    //     $device = Device::find($id);
-    //     return view('devices.show', compact('device'));
-    // }
+    public function show($id)
+    {
+         $device = Device::find($id);
+         return view('devices.show', compact('device'));
+    }
 
-    // // Menampilkan form edit device
-    // public function edit($id)
-    // {
-    //     $device = Device::find($id);
-    //     return view('devices.edit', compact('device'));
-    // }
+    public function edit($id)
+    {
+        $device = Device::find($id);
+        $oficinas = Oficina::all();
+        return view('devices.edit', compact('device', 'oficinas'));
+    }
 
-    // // Mengupdate device ke database
-    // public function update(Request $request, $id)
-    // {
-    //     $device = Device::find($id);
-    //     $device->nama = $request->input('nama');
-    //     $device->no_sn = $request->input('no_sn');
-    //     $device->lokasi = $request->input('lokasi');
-    //     $device->save();
+    public function update(Request $request, $id)
+    {
+        $device = Device::find($id);
+        $oficina = Oficina::where('idoficina', $request->input('idoficina'))->first();
 
-    //     return redirect()->route('devices.index')->with('success', 'Device berhasil diupdate!');
-    // }
+        if (!$oficina) {
+            return redirect()->route('devices.index')->with('error', 'Oficina no encontrada');
+        }
+        $device->name = $request->input('name');
+        $device->serial_number = $request->input('serial_number');
+        $device->idreloj = $request->input('idreloj') ?? '999999';
+        $device->idoficina = $oficina->idoficina;
+        $device->idempresa = $oficina->idempresa;
+        $device->save();
+      return redirect()->route('devices.index')->with('success', 'Biométrico actualizado correctamente');
+    }
 
-    // // Menghapus device dari database
-    // public function destroy($id)
-    // {
-    //     $device = Device::find($id);
-    //     $device->delete();
+    public function restart(Request $request, $id)
+    {
+        Log::info('Restart', ['id' => $id]);
+        $device = Device::find($id);
+        try {
+            $cmdIdService = resolve(CommandIdService::class); 
+            $nextCmdId = $cmdIdService->getNextCmdId();
 
-    //     return redirect()->route('devices.index')->with('success', 'Device berhasil dihapus!');
-    // }
+            $device->commands()->create([
+                'device_id' => $device->id,
+                'command' => $nextCmdId,
+                'data' => "C:{$nextCmdId}:CONTROL DEVICE 03000000",
+                'executed_at' => null
+            ]);
+            return redirect()->route('devices.index')->with('success', 'Biométrico reiniciado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->route('devices.index')->with('error', 'Error al reiniciar biométrico');
+        }
+    }
+
+    public function Populate(Request $request, $id)
+    {
+        Log::info('Populate', ['id' => $id]);
+        $device = Device::find($id);
+        try {
+            $device->populate();
+            return redirect()->route('devices.index')->with('success', 'Biométrico actualizado correctamente');
+        } catch (\Exception $e) {
+            return redirect()->route('devices.index')->with('error', 'Error al actualizar biométrico');
+        }
+    }
 }

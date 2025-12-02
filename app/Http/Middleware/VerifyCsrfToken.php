@@ -14,6 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         //
         'iclock/cdata',
-        'iclock/getrequest'
+        'iclock/getrequest',
+        'iclock/devicecmd'
     ];
 }

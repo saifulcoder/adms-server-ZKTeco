@@ -2,23 +2,27 @@
 
 @section('content')
     <div class="container">
-        <h2>Tambah Device</h2>
+        <h2>Create Biometric Recor</h2>
         <form method="post" action="{{ route('devices.store') }}">
             @csrf
             <div class="form-group">
-                <label for="nama">Nama</label>
-                <input type="text" name="nama" class="form-control" id="nama" placeholder="Nama">
+                <label for="name">Location</label>
+                <input type="text" name="name" class="form-control" id="name" placeholder="Location">
             </div>
             <div class="form-group">
-                <label for="no_sn">Nomor Serial</label>
-                <input type="text" name="no_sn" class="form-control" id="no_sn" placeholder="Nomor Serial">
+                <label for="no_sn">Serial Number</label>
+                <input type="text" name="no_sn" class="form-control" id="no_sn" placeholder="SN00001">
             </div>
             <div class="form-group">
-                <label for="lokasi">Lokasi</label>
-                <input type="text" name="lokasi" class="form-control" id="lokasi" placeholder="Lokasi">
+                <label for="lokasi">ID Reloj</label>
+                <input type="text" name="idreloj" class="form-control" id="idreloj" placeholder="ID Reloj">
+            </div>
+            <div class="form-group">
+                <label for="lokasi">IP</label>
+                <input type="text" name="ip" class="form-control" id="ip" placeholder="IP">
             </div>
 
-            <button type="submit" class="btn btn-primary">Simpan</button>
+            <button type="submit" class="btn btn-primary">Enviar</button>
         </form>
     </div>
 @endsection

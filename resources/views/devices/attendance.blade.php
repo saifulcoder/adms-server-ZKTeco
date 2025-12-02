@@ -1,14 +1,28 @@
-@extends('layouts.app')  {{-- Asumsikan Anda memiliki layout utama --}}
+@extends('layouts.app')
 
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Attendance</h2>
+    <h2 class="mb-4">Checadas</h2>
 
-    @if(session('success'))
+    @if(session('status'))
         <div class="alert alert-success">
-            {{ session('success') }}
+            {{ session('status') }}
         </div>
     @endif
+    <div class="form-group">
+        <label for="oficina">Offices</label>
+        <form method="GET" action="{{ route('devices.attendance', ['selectedOficina' => $selectedOficina]) }}" id="oficinaForm">
+            <select name="selectedOficina" class="form-control" id="selectedOficina">
+                @foreach ($oficinas as $oficina)
+                    <option value="{{ $oficina->idoficina }}" 
+                        {{ $oficina->idoficina == $selectedOficina ? 'selected' : '' }}>
+                        {{ $oficina->ubicacion }}
+                    </option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    <br>
 
     <div class="table-responsive">
         <table class="table table-bordered data-table">
@@ -17,13 +31,11 @@
                     <th>ID</th>
                     <th>SN</th>
                     <th>Employee ID</th>
+                    <th>Employee</th>
                     <th>Timestamp</th>
-                    <th>Status 1</th>
-                    <th>Status 2</th>
-                    <th>Status 3</th>
-                    <th>Status 4</th>
-                    <th>Status 5</th>
-                    
+                    <th>Updated at</th>
+                    <th>Diff</th>
+                    <th>Checada Uniqueid</th>
                 </tr>
             </thead>
             <tbody>
@@ -32,24 +44,31 @@
                         <td>{{ $attendance->id }}</td>
                         <td>{{ $attendance->sn }}</td>
                         <td>{{ $attendance->employee_id }}</td>
+                        <td>{!! $attendance->getEmployee()?->fullname ?? '<em>Unknown</em>' !!}</td>
                         <td>{{ $attendance->timestamp }}</td>
-                        <td>{{ $attendance->status1 }}</td>
-                        <td>{{ $attendance->status2 }}</td>
-                        <td>{{ $attendance->status3 }}</td>
-                        <td>{{ $attendance->status4 }}</td>
-                        <td>{{ $attendance->status5 }}</td>
-
+                        <td>{{ $attendance->updated_at }}</td>
+                        <td class="{{ $attendance->updated_at->diffInMinutes($attendance->timestamp) > 3 ? 'text-danger' : '' }}">
+                            {{ $attendance->updated_at->diffForHumans($attendance->timestamp) }}
+                        </td>
+                        <td>{{ $attendance->response_uniqueid }}</td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
     
-    <!-- source: https://stackoverflow.com/a/70119390 -->
     <div class="d-felx justify-content-center">
-        {{ $attendances->links() }}  {{-- Tampilkan pagination jika ada --}}
+        {{ $attendances->links() }}  
     </div>
-
-
 </div>
+@endsection
+
+@section('scripts')
+<script>
+    $(document).ready(function() {
+        $('#selectedOficina').change(function() {
+            $('#oficinaForm').submit();
+        });
+    });
+</script>
 @endsection
