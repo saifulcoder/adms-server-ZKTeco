@@ -54,7 +54,7 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => ['single','error_log'],
             'ignore_exceptions' => false,
         ],
 
@@ -62,6 +62,13 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
+        'error_log' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/error.log'),
+            'level' => 'error',
             'replace_placeholders' => true,
         ],
 
@@ -78,7 +85,7 @@ return [
             'url' => env('LOG_SLACK_WEBHOOK_URL'),
             'username' => 'Laravel Log',
             'emoji' => ':boom:',
-            'level' => env('LOG_LEVEL', 'critical'),
+            'level' => env('LOG_LEVEL', 'error'),
             'replace_placeholders' => true,
         ],
 
@@ -111,7 +118,16 @@ return [
             'facility' => LOG_USER,
             'replace_placeholders' => true,
         ],
-
+            'request_log' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/request_response.log'),
+            'level' => 'info',
+        ],
+            '404_errors' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/404_errors.log'),
+            'level' => 'warning',
+        ],
         'errorlog' => [
             'driver' => 'errorlog',
             'level' => env('LOG_LEVEL', 'debug'),

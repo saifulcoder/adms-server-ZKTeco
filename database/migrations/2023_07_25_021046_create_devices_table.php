@@ -10,14 +10,15 @@ class CreateDevicesTable extends Migration
     {
         Schema::create('devices', function (Blueprint $table) {
             $table->id();
-            $table->string('nama')->nullable();
-            $table->string('no_sn')->unique();
-            $table->string('lokasi')->nullable();
+            $table->string('name')->nullable();
+            $table->string('serial_number')->unique();
+            $table->string('idempresa')->nullable();
+            $table->string('idoficina')->nullable();
+            $table->string('idreloj')->nullable();
             $table->datetime('online')->nullable();
-            // Opsi 1: Menggunakan CURRENT_TIMESTAMP saat insert
+            $table->string('public_ip')->nullable();
+            $table->string('created_by')->nullable();
             $table->timestamp('created_at')->useCurrent();
-
-            // Opsi 2: Menggunakan CURRENT_TIMESTAMP saat insert dan update
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
     }

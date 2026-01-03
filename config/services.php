@@ -30,5 +30,22 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
-
+    'apis' => [
+        4 => [
+            'base_url' => env('API_UAMEX_BASE_URL', 'https://unitedmex.mindware.com.mx'),
+            'token' => env('API_UAMEX_TOKEN', ''),
+        ],
+        1 => [
+            'base_url' => env('API_UACUN_BASE_URL', 'https://unitedmex.test.mindware.com.mx'),
+            'token' => env('API_UACUN_TOKEN', ''),
+        ],
+        5 => [
+            'base_url' => env('API_UAPVR_BASE_URL', 'https://unitedpvr.mindware.com.mx'),
+            'token' => env('API_UAPVR_TOKEN', ''),
+        ],
+        6 => [
+            'base_url' => env('API_UASJD_BASE_URL', 'https://unitedsjd.mindware.com.mx'),
+            'token' => env('API_UASJD_TOKEN', ''),
+        ],
+    ],
 ];
