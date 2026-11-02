@@ -35,11 +35,15 @@ class BiometricRecordParser
     /** ZKTeco biometric type codes (BIODATA Type=). */
     public const TYPE_FINGERPRINT = 1;
 
+    /** BIODATA Type= values that are face templates (2 = near-infrared, 9 = visible light). */
+    public const TYPES_FACE = [2, 9];
+
     /**
      * Parse a full payload into a list of records.
      *
      * Each record is an array with at least a 'kind' key:
      *   - fingerprint : pin, fid, size, valid, duress, template, format, version
+     *   - face        : same shape as fingerprint
      *   - user        : pin, name, card, group, privilege, password
      *   - biometric   : any non-fingerprint biometric (face, palm, vein)
      *   - other       : anything else, kept with its raw line for logging
@@ -85,6 +89,19 @@ class BiometricRecordParser
     }
 
     /**
+     * Only the face templates out of a payload.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function parseFaces(?string $payload): array
+    {
+        return array_values(array_filter(
+            $this->parse($payload),
+            fn (array $record) => $record['kind'] === 'face'
+        ));
+    }
+
+    /**
      * True when the payload looks like user/biometric data rather than
      * attendance punches. Used to decide which ingestion path a cdata POST
      * takes when the terminal does not set table=OPERLOG reliably.
@@ -119,7 +136,7 @@ class BiometricRecordParser
             'FP' => $this->fingerprintRecord($fields, $line, 'FP'),
             'BIODATA' => $this->bioDataRecord($fields, $line),
             'USER' => $this->userRecord($fields, $line),
-            'FACE' => $this->otherBiometricRecord($fields, $line, 'face'),
+            'FACE' => $this->faceRecord($fields, $line, 'FACE'),
             default => [
                 'kind' => 'other',
                 'tag' => $tag,
@@ -210,8 +227,8 @@ class BiometricRecordParser
 
     /**
      * Newer "BIODATA Pin=..\tNo=..\tType=1\t..\tTmp=.." record. Type 1 is a
-     * fingerprint; anything else (face, palm, vein) is kept but not treated as
-     * a fingerprint template.
+     * fingerprint, 2 and 9 are faces; anything else (palm, vein) is kept but not
+     * treated as a template.
      *
      * @param array<string, string> $fields
      * @return array<string, mixed>|null
@@ -220,11 +237,34 @@ class BiometricRecordParser
     {
         $type = $this->firstOf($fields, ['type']);
 
+        if ($type !== null && in_array((int) $type, self::TYPES_FACE, true)) {
+            return $this->faceRecord($fields, $raw, 'BIODATA');
+        }
+
         if ($type !== null && (int) $type !== self::TYPE_FINGERPRINT) {
             return $this->otherBiometricRecord($fields, $raw, 'biodata-type-' . (int) $type);
         }
 
         return $this->fingerprintRecord($fields, $raw, 'BIODATA');
+    }
+
+    /**
+     * Face template: same wire shape as a fingerprint, different kind.
+     *
+     * @param array<string, string> $fields
+     * @return array<string, mixed>|null
+     */
+    protected function faceRecord(array $fields, string $raw, string $tag): ?array
+    {
+        $record = $this->fingerprintRecord($fields, $raw, $tag);
+
+        if ($record === null) {
+            return null;
+        }
+
+        $record['kind'] = 'face';
+
+        return $record;
     }
 
     /**

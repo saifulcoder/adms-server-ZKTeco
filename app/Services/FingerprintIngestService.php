@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Agente;
 use App\Models\Command;
 use App\Models\Device;
+use App\Models\FaceTemplate;
 use App\Models\FingerprintTemplate;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -30,12 +31,13 @@ class FingerprintIngestService
     }
 
     /**
-     * @return array{fingerprints: int, stored: int, updated: int, unchanged: int, users: int, other: int}
+     * @return array{fingerprints: int, faces: int, stored: int, updated: int, unchanged: int, users: int, other: int}
      */
     public function ingest(?string $sn, ?string $payload, ?Device $device = null): array
     {
         $result = [
             'fingerprints' => 0,
+            'faces' => 0,
             'stored' => 0,
             'updated' => 0,
             'unchanged' => 0,
@@ -66,6 +68,22 @@ class FingerprintIngestService
                 continue;
             }
 
+            if ($record['kind'] === 'face') {
+                $result['faces']++;
+
+                try {
+                    $this->storeFaceTemplate($sn, $device, $record);
+                } catch (Throwable $e) {
+                    Log::error('FingerprintIngestService: failed to store face template', [
+                        'sn' => $sn,
+                        'pin' => $record['pin'] ?? null,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                continue;
+            }
+
             if ($record['kind'] !== 'fingerprint') {
                 $result['other']++;
                 continue;
@@ -91,11 +109,35 @@ class FingerprintIngestService
             $this->refreshAgenteFingerprintIndex($device, (string) $pin);
         }
 
-        if ($result['fingerprints'] > 0) {
+        if ($result['fingerprints'] > 0 || $result['faces'] > 0) {
             Log::info('FingerprintIngestService: templates ingested', array_merge($result, ['sn' => $sn]));
         }
 
         return $result;
+    }
+
+    /**
+     * Upsert one face template, keyed (sn, pin, fid) like fingerprints.
+     *
+     * @param array<string, mixed> $record
+     */
+    protected function storeFaceTemplate(string $sn, ?Device $device, array $record): void
+    {
+        FaceTemplate::updateOrCreate(
+            ['sn' => $sn, 'pin' => (string) $record['pin'], 'fid' => (int) $record['fid']],
+            [
+                'device_id' => $device->id ?? null,
+                'size' => $record['size'],
+                'valid' => $record['valid'],
+                'template' => $record['template'],
+                'template_hash' => sha1((string) $record['template']),
+                'idempresa' => $device->idempresa ?? null,
+                'idoficina' => $device->idoficina ?? null,
+                'format' => $record['format'],
+                'version' => $record['version'],
+                'captured_at' => now(),
+            ]
+        );
     }
 
     /**

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Agente;
 use App\Models\Command;
 use App\Models\Device;
+use App\Models\FaceTemplate;
 use App\Models\FingerprintTemplate;
 use App\Models\Oficina;
 use App\Services\PullFingerprintsService;
@@ -101,6 +102,27 @@ class PullFingerprintsTest extends TestCase
         $queued = app(PullFingerprintsService::class)->forDevice($device, null, [0]);
 
         $this->assertSame(2, $queued);
+    }
+
+    public function test_a_face_template_uploaded_by_the_terminal_is_stored(): void
+    {
+        $this->office();
+        $device = $this->device();
+
+        $body = "BIODATA Pin=1234\tNo=0\tValid=1\tType=9\tTmp=RkFDRQ==\r\n";
+
+        $this->postCdata('/iclock/cdata?SN=SN-1&table=OPERLOG', $body)->assertOk();
+        // Re-sending the same face must update, not duplicate.
+        $this->postCdata('/iclock/cdata?SN=SN-1&table=OPERLOG', $body)->assertOk();
+
+        $this->assertSame(1, FaceTemplate::count());
+        $face = FaceTemplate::first();
+        $this->assertSame('1234', $face->pin);
+        $this->assertSame('RkFDRQ==', $face->template);
+        $this->assertEquals($device->id, $face->device_id);
+        $this->assertEquals('1', $face->idempresa);
+        $this->assertEquals('2', $face->idoficina);
+        $this->assertSame(0, FingerprintTemplate::count());
     }
 
     public function test_a_template_uploaded_by_the_terminal_is_stored(): void

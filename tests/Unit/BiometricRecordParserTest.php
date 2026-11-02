@@ -49,7 +49,29 @@ class BiometricRecordParserTest extends TestCase
         $this->assertSame([], $this->parser()->parseFingerprints($payload));
 
         $records = $this->parser()->parse($payload);
-        $this->assertSame('biometric', $records[0]['kind']);
+        $this->assertSame('face', $records[0]['kind']);
+        $this->assertSame('RkFDRQ==', $records[0]['template']);
+        $this->assertCount(1, $this->parser()->parseFaces($payload));
+    }
+
+    public function test_it_parses_a_legacy_face_record(): void
+    {
+        $payload = "FACE PIN=5\tFID=50\tSIZE=1704\tVALID=1\tTMP=RkFDRQ==";
+
+        $records = $this->parser()->parseFaces($payload);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('5', $records[0]['pin']);
+        $this->assertSame(50, $records[0]['fid']);
+        $this->assertSame([], $this->parser()->parseFingerprints($payload));
+    }
+
+    public function test_other_biometric_types_are_not_faces(): void
+    {
+        $payload = "BIODATA Pin=77\tNo=0\tValid=1\tType=8\tTmp=UEFMTQ==";
+
+        $this->assertSame([], $this->parser()->parseFaces($payload));
+        $this->assertSame('biometric', $this->parser()->parse($payload)[0]['kind']);
     }
 
     public function test_it_keeps_names_containing_spaces_intact(): void

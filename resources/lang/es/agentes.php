@@ -35,4 +35,8 @@ return [
     'shortname' => 'Shortname',
     'fullname' => 'Fullname',
     'last_update' => 'Last Update',
+    'fingerprints' => 'Huellas',
+    'face' => 'Rostro',
+    'biometrics_pulled' => 'Obtenida (:count)',
+    'biometrics_none' => 'Sin obtener',
 ];

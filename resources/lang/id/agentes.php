@@ -35,4 +35,8 @@ return [
     'shortname' => 'Nama Pendek',
     'fullname' => 'Nama Panjang',
     'last_update' => 'Update Terakhir',
+    'fingerprints' => 'Sidik Jari',
+    'face' => 'Wajah',
+    'biometrics_pulled' => 'Sudah diambil (:count)',
+    'biometrics_none' => 'Belum diambil',
 ];

@@ -111,6 +111,8 @@
                     <th>{{ __('agentes.id_agente') }}</th>
                     <th>{{ __('agentes.shortname') }}</th>
                     <th>{{ __('agentes.fullname') }}</th>
+                    <th>{{ __('agentes.fingerprints') }}</th>
+                    <th>{{ __('agentes.face') }}</th>
                     <th>{{ __('agentes.last_update') }}</th>
                 </tr>
             </thead>
@@ -122,6 +124,25 @@
                         <td>{{ $agente->idagente }}</td>
                         <td>{{ $agente->shortname }}</td>
                         <td>{{ $agente->fullname }}</td>
+                        @php
+                            $key = "{$agente->idempresa}|{$agente->idoficina}|{$agente->idagente}";
+                            $fingers = $fingerCounts[$key] ?? 0;
+                            $faces = $faceCounts[$key] ?? 0;
+                        @endphp
+                        <td data-order="{{ $fingers }}">
+                            @if($fingers > 0)
+                                <span class="badge bg-success">{{ __('agentes.biometrics_pulled', ['count' => $fingers]) }}</span>
+                            @else
+                                <span class="badge bg-secondary">{{ __('agentes.biometrics_none') }}</span>
+                            @endif
+                        </td>
+                        <td data-order="{{ $faces }}">
+                            @if($faces > 0)
+                                <span class="badge bg-success">{{ __('agentes.biometrics_pulled', ['count' => $faces]) }}</span>
+                            @else
+                                <span class="badge bg-secondary">{{ __('agentes.biometrics_none') }}</span>
+                            @endif
+                        </td>
                         <td>{{ $agente->updated_at }}</td>
                     </tr>
                 @endforeach
