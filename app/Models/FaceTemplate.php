@@ -21,6 +21,7 @@ class FaceTemplate extends Model
         'sn',
         'pin',
         'fid',
+        'bio_type',
         'size',
         'valid',
         'template',
@@ -34,6 +35,7 @@ class FaceTemplate extends Model
 
     protected $casts = [
         'fid' => 'integer',
+        'bio_type' => 'integer',
         'size' => 'integer',
         'valid' => 'integer',
         'captured_at' => 'datetime',

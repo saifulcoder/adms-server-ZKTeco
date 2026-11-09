@@ -152,9 +152,11 @@ class DeviceController extends Controller
         }
 
         if ($mode === 'pin' && $pin !== '') {
-            $queued = $service->forPin($device, $pin);
+            $queued = $service->forPin($device, $pin) + $service->faces($device, [$pin]);
         } elseif ($mode === 'roster') {
-            $queued = $service->forDevice($device);
+            // Faces cost one command per type for the whole terminal, so there
+            // is no point asking employee by employee.
+            $queued = $service->forDevice($device) + $service->faces($device);
         } else {
             $queued = $service->bulk($device);
         }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Oficina;
 use App\Models\Agente;
+use App\Models\FacePhoto;
 use App\Models\FaceTemplate;
 use App\Models\FingerprintTemplate;
 use App\Services\SyncStationEmployeesService;
@@ -40,8 +41,14 @@ class AgentesController extends Controller
         $selectedEmpresa = $selected ? $selected->idempresa : null;
         $selectedOficinaId = $selected ? $selected->id : null;
 
-        $fingerCounts = $this->templateCounts(FingerprintTemplate::class, $selected);
-        $faceCounts = $this->templateCounts(FaceTemplate::class, $selected);
+        $fingerCounts = $this->templateCounts(FingerprintTemplate::valid(), $selected);
+        $faceCounts = $this->templateCounts(FaceTemplate::valid(), $selected);
+
+        // A visible-light terminal may hand over only the comparison photo, so
+        // an employee with a photo and no template still counts as pulled.
+        foreach ($this->templateCounts(FacePhoto::query(), $selected, 'bio_type') as $key => $photos) {
+            $faceCounts[$key] = max($faceCounts[$key] ?? 0, $photos);
+        }
 
         return view('agentes.index', compact('agentes', 'oficinas', 'selectedOficina', 'selectedEmpresa', 'selectedOficinaId', 'fingerCounts', 'faceCounts'));
     }
@@ -51,12 +58,13 @@ class AgentesController extends Controller
      * on the terminal == agentes.idagente). Counts distinct slots so the same
      * finger/face held by several terminals is not counted twice.
      *
-     * @param class-string<FingerprintTemplate|FaceTemplate> $model
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $slot column that tells one template of a PIN from another
      */
-    protected function templateCounts(string $model, ?Oficina $office)
+    protected function templateCounts($query, ?Oficina $office, string $slot = 'fid')
     {
-        $query = $model::valid()
-            ->selectRaw('idempresa, idoficina, pin, COUNT(DISTINCT fid) as slots')
+        $query = $query
+            ->selectRaw("idempresa, idoficina, pin, COUNT(DISTINCT {$slot}) as slots")
             ->groupBy('idempresa', 'idoficina', 'pin');
 
         if ($office) {

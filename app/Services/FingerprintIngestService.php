@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Agente;
 use App\Models\Command;
 use App\Models\Device;
+use App\Models\FacePhoto;
 use App\Models\FaceTemplate;
 use App\Models\FingerprintTemplate;
 use Illuminate\Support\Facades\Log;
@@ -31,13 +32,14 @@ class FingerprintIngestService
     }
 
     /**
-     * @return array{fingerprints: int, faces: int, stored: int, updated: int, unchanged: int, users: int, other: int}
+     * @return array{fingerprints: int, faces: int, face_photos: int, stored: int, updated: int, unchanged: int, users: int, other: int}
      */
     public function ingest(?string $sn, ?string $payload, ?Device $device = null): array
     {
         $result = [
             'fingerprints' => 0,
             'faces' => 0,
+            'face_photos' => 0,
             'stored' => 0,
             'updated' => 0,
             'unchanged' => 0,
@@ -84,6 +86,22 @@ class FingerprintIngestService
                 continue;
             }
 
+            if ($record['kind'] === 'face_photo') {
+                $result['face_photos']++;
+
+                try {
+                    $this->storeFacePhoto($sn, $device, $record);
+                } catch (Throwable $e) {
+                    Log::error('FingerprintIngestService: failed to store face photo', [
+                        'sn' => $sn,
+                        'pin' => $record['pin'] ?? null,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+
+                continue;
+            }
+
             if ($record['kind'] !== 'fingerprint') {
                 $result['other']++;
                 continue;
@@ -109,7 +127,7 @@ class FingerprintIngestService
             $this->refreshAgenteFingerprintIndex($device, (string) $pin);
         }
 
-        if ($result['fingerprints'] > 0 || $result['faces'] > 0) {
+        if ($result['fingerprints'] > 0 || $result['faces'] > 0 || $result['face_photos'] > 0) {
             Log::info('FingerprintIngestService: templates ingested', array_merge($result, ['sn' => $sn]));
         }
 
@@ -127,6 +145,7 @@ class FingerprintIngestService
             ['sn' => $sn, 'pin' => (string) $record['pin'], 'fid' => (int) $record['fid']],
             [
                 'device_id' => $device->id ?? null,
+                'bio_type' => $record['bio_type'] ?? null,
                 'size' => $record['size'],
                 'valid' => $record['valid'],
                 'template' => $record['template'],
@@ -135,6 +154,28 @@ class FingerprintIngestService
                 'idoficina' => $device->idoficina ?? null,
                 'format' => $record['format'],
                 'version' => $record['version'],
+                'captured_at' => now(),
+            ]
+        );
+    }
+
+    /**
+     * Upsert one face comparison photo, keyed (sn, pin, bio_type).
+     *
+     * @param array<string, mixed> $record
+     */
+    protected function storeFacePhoto(string $sn, ?Device $device, array $record): void
+    {
+        FacePhoto::updateOrCreate(
+            ['sn' => $sn, 'pin' => (string) $record['pin'], 'bio_type' => (int) $record['bio_type']],
+            [
+                'device_id' => $device->id ?? null,
+                'file_name' => $record['file_name'],
+                'size' => $record['size'],
+                'content' => $record['content'],
+                'content_hash' => sha1((string) $record['content']),
+                'idempresa' => $device->idempresa ?? null,
+                'idoficina' => $device->idoficina ?? null,
                 'captured_at' => now(),
             ]
         );

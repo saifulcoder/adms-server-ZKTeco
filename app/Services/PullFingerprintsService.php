@@ -9,8 +9,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Queues the ADMS commands that make a terminal hand its fingerprint templates
- * back to the server.
+ * Queues the ADMS commands that make a terminal hand its fingerprint and face
+ * templates back to the server.
  *
  * Two mechanisms, because neither alone is enough in practice:
  *
@@ -24,6 +24,10 @@ use Illuminate\Support\Facades\Log;
  *    one employee. Precise and firmware-independent, but costs one command per
  *    finger, so pulling a full office this way is expensive.
  *
+ *  - Faces (`DATA QUERY BIODATA Type=n [PIN=x]`): the unified-template query,
+ *    one command per face type for a whole terminal or for one employee. Every
+ *    pull above also queues these unless adms.pull_faces is off.
+ *
  * Either way the templates come back asynchronously: the terminal POSTs them to
  * /iclock/cdata, where iclockController hands them to FingerprintIngestService.
  * Nothing here blocks waiting for data.
@@ -35,6 +39,7 @@ class PullFingerprintsService
     public const TYPE_CHECK = 'pull_check';
     public const TYPE_QUERY_FP = 'pull_fingertmp';
     public const TYPE_QUERY_USER = 'pull_userinfo';
+    public const TYPE_QUERY_FACE = 'pull_face';
 
     protected CommandIdService $commandIdService;
 
@@ -68,7 +73,74 @@ class PullFingerprintsService
             );
         }
 
+        $queued += $this->faces($device);
+
         Log::info('PullFingerprintsService: bulk pull queued', [
+            'device_id' => $device->id,
+            'sn' => $device->serial_number,
+            'commands' => $queued,
+        ]);
+
+        return $queued;
+    }
+
+    /**
+     * Ask a terminal for the face templates it holds.
+     *
+     * With no PINs this is one command per face type for the whole terminal;
+     * with PINs, one per type per employee. Terminals that have no faces of a
+     * given type (or no face support at all) just fail the command, which is
+     * recorded on /iclock/devicecmd like any other.
+     *
+     * Comparison photos (BIOPHOTO) have no query of their own here — they are
+     * uploaded on enrolment when the handshake TransFlag asks for them.
+     *
+     * @param iterable<int|string>|null $pins null = every face on the terminal
+     * @return int number of commands queued (0 when adms.pull_faces is off)
+     */
+    public function faces(Device $device, ?iterable $pins = null): int
+    {
+        if (!config('adms.pull_faces', true)) {
+            return 0;
+        }
+
+        $types = array_values(array_unique(array_map(
+            'intval',
+            (array) config('adms.face_types', BiometricRecordParser::TYPES_FACE)
+        )));
+
+        $queued = 0;
+
+        if ($pins === null) {
+            foreach ($types as $type) {
+                $queued += $this->queue(
+                    $device,
+                    fn (int $cmdId) => "C:{$cmdId}:DATA QUERY BIODATA Type={$type}",
+                    self::TYPE_QUERY_FACE,
+                    "TYPE:{$type}"
+                );
+            }
+        } else {
+            foreach ($pins as $pin) {
+                $pin = trim((string) $pin);
+
+                // A PIN ends up inside a command line; never let one break it.
+                if ($pin === '' || preg_match('/\s/', $pin)) {
+                    continue;
+                }
+
+                foreach ($types as $type) {
+                    $queued += $this->queue(
+                        $device,
+                        fn (int $cmdId) => "C:{$cmdId}:DATA QUERY BIODATA Type={$type}\tPIN={$pin}",
+                        self::TYPE_QUERY_FACE,
+                        "PIN:{$pin}/TYPE:{$type}"
+                    );
+                }
+            }
+        }
+
+        Log::info('PullFingerprintsService: face pull queued', [
             'device_id' => $device->id,
             'sn' => $device->serial_number,
             'commands' => $queued,

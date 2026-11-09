@@ -61,7 +61,7 @@ return [
     'queue_pull' => 'Queue pull',
     'pull_mode' => 'What to pull',
     'pull_mode_bulk' => 'Everything the device holds',
-    'pull_mode_bulk_help' => 'Sends a single CHECK command. Best for a terminal that was already enrolled in the field.',
+    'pull_mode_bulk_help' => 'Sends a CHECK command plus one query per face type. Best for a terminal that was already enrolled in the field.',
     'pull_mode_roster' => 'Every employee on this office roster',
     'pull_mode_roster_help' => 'One query per employee per finger. Precise, but queues a lot of commands.',
     'pull_mode_pin' => 'One employee',
