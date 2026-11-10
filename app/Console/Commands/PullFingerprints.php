@@ -8,7 +8,7 @@ use App\Services\PullFingerprintsService;
 use Illuminate\Console\Command;
 
 /**
- * Ask terminals for their fingerprint templates.
+ * Ask terminals for their fingerprint (and face) templates.
  *
  *   php artisan fingerprints:pull --device=3
  *   php artisan fingerprints:pull --device=3 --pin=1234
@@ -29,7 +29,7 @@ class PullFingerprints extends Command
         {--roster : Targeted pull for the whole office roster instead of a bulk CHECK}
         {--fingers= : Comma-separated finger ids, e.g. 0,1 (targeted mode only)}';
 
-    protected $description = 'Queue commands asking terminals to upload their fingerprint templates.';
+    protected $description = 'Queue commands asking terminals to upload their fingerprint and face templates.';
 
     public function handle(PullFingerprintsService $service): int
     {
@@ -51,10 +51,10 @@ class PullFingerprints extends Command
 
         foreach ($devices as $device) {
             if ($pin) {
-                $queued = $service->forPin($device, $pin, $fids);
+                $queued = $service->forPin($device, $pin, $fids) + $service->faces($device, [$pin]);
                 $mode = "PIN {$pin}";
             } elseif ($roster) {
-                $queued = $service->forDevice($device, null, $fids);
+                $queued = $service->forDevice($device, null, $fids) + $service->faces($device);
                 $mode = 'roster';
             } else {
                 $queued = $service->bulk($device);

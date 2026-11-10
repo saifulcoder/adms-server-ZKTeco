@@ -63,7 +63,7 @@ return [
     'queue_pull' => 'Antrekan penarikan',
     'pull_mode' => 'Yang ditarik',
     'pull_mode_bulk' => 'Semua yang ada di perangkat',
-    'pull_mode_bulk_help' => 'Mengirim satu perintah CHECK. Cocok untuk terminal yang sudah terdaftar di lapangan.',
+    'pull_mode_bulk_help' => 'Mengirim perintah CHECK dan satu kueri per jenis wajah. Cocok untuk terminal yang sudah terdaftar di lapangan.',
     'pull_mode_roster' => 'Semua karyawan di kantor ini',
     'pull_mode_roster_help' => 'Satu kueri per karyawan per jari. Presisi, tetapi mengantrekan banyak perintah.',
     'pull_mode_pin' => 'Satu karyawan',

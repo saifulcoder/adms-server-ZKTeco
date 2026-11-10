@@ -63,7 +63,7 @@ return [
     'queue_pull' => 'Encolar descarga',
     'pull_mode' => 'Qué descargar',
     'pull_mode_bulk' => 'Todo lo que tenga el biométrico',
-    'pull_mode_bulk_help' => 'Envía un solo comando CHECK. Ideal para un equipo que ya venía enrolado en campo.',
+    'pull_mode_bulk_help' => 'Envía un comando CHECK y una consulta por tipo de rostro. Ideal para un equipo que ya venía enrolado en campo.',
     'pull_mode_roster' => 'Todos los empleados de esta oficina',
     'pull_mode_roster_help' => 'Una consulta por empleado y por dedo. Preciso, pero encola muchos comandos.',
     'pull_mode_pin' => 'Un empleado',

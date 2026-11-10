@@ -66,6 +66,44 @@ class BiometricRecordParserTest extends TestCase
         $this->assertSame([], $this->parser()->parseFingerprints($payload));
     }
 
+    public function test_a_face_record_carries_its_biometric_type(): void
+    {
+        $parser = $this->parser();
+
+        $this->assertSame(9, $parser->parseFaces("BIODATA Pin=7\tNo=0\tValid=1\tType=9\tTmp=RkFDRQ==")[0]['bio_type']);
+        // Legacy FACE lines have no Type and only come from near-infrared terminals.
+        $this->assertSame(2, $parser->parseFaces("FACE PIN=5\tFID=3\tSIZE=4\tVALID=1\tTMP=RkFDRQ==")[0]['bio_type']);
+    }
+
+    public function test_face_templates_sharing_a_number_keep_distinct_slots(): void
+    {
+        $payload = "BIODATA Pin=7\tNo=0\tIndex=0\tValid=1\tType=2\tTmp=QQ==\n"
+            . "BIODATA Pin=7\tNo=0\tIndex=5\tValid=1\tType=2\tTmp=Qg==";
+
+        $records = $this->parser()->parseFaces($payload);
+
+        $this->assertSame([0, 5], array_column($records, 'fid'));
+    }
+
+    public function test_it_parses_a_face_comparison_photo(): void
+    {
+        $payload = "BIOPHOTO PIN=12\tFileName=12.jpg\tType=9\tSize=16\tContent=/9j/4AAQSkZJRg==";
+
+        $this->assertTrue($this->parser()->looksLikeBiometricPayload($payload));
+
+        $records = $this->parser()->parseFacePhotos($payload);
+
+        $this->assertCount(1, $records);
+        $this->assertSame('12', $records[0]['pin']);
+        $this->assertSame(9, $records[0]['bio_type']);
+        $this->assertSame('12.jpg', $records[0]['file_name']);
+        $this->assertSame(16, $records[0]['size']);
+        // Base64 padding must survive the key=value split.
+        $this->assertSame('/9j/4AAQSkZJRg==', $records[0]['content']);
+        $this->assertSame([], $this->parser()->parseFaces($payload));
+        $this->assertSame([], $this->parser()->parseFingerprints($payload));
+    }
+
     public function test_other_biometric_types_are_not_faces(): void
     {
         $payload = "BIODATA Pin=77\tNo=0\tValid=1\tType=8\tTmp=UEFMTQ==";

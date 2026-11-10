@@ -80,15 +80,15 @@ class iclockController extends Controller
                 "ResLogCount=50000\r\n" .
                 //"TransTimes=00:00;14:05\r\n" .
                 "TransInterval=4\r\n" .
-                // Positions 6/7 (EnrollFP, ChgFP) are what make the terminal
-                // upload a fingerprint template as soon as it is enrolled or
-                // changed. See config/adms.php.
-                "TransFlag=" . config('adms.trans_flag', '1111111000') . "\r\n" .
+                // This mask is what makes the terminal upload fingerprint and
+                // face data as soon as it is enrolled or changed. See
+                // config/adms.php for the meaning of each position.
+                "TransFlag=" . config('adms.trans_flag', '111111111001') . "\r\n" .
                 "TimeZone=". $timezone . "\r\n" .
                 "Realtime=1\r\n" .
                 "Encrypt=0";
 
-            return $r;
+            return $r . $this->pushProtocolOptions((string) $request->input('SN'));
 
         } catch (Throwable $e) {
             $data['error'] = $e;
@@ -96,6 +96,32 @@ class iclockController extends Controller
             report($e);
             return "ERROR: ".$e."\n";
         }
+    }
+
+    /**
+     * Extra handshake lines that tell a terminal the server speaks the newer
+     * push protocol, which is what unlocks unified templates and comparison
+     * photos on visible-light face terminals. Opt-in — see config/adms.php.
+     */
+    protected function pushProtocolOptions(string $sn): string
+    {
+        $version = trim((string) config('adms.push_prot_ver'));
+
+        if ($version === '') {
+            return '';
+        }
+
+        $only = (array) config('adms.push_prot_ver_devices', []);
+
+        if ($only !== [] && !in_array($sn, $only, true)) {
+            return '';
+        }
+
+        return "\r\n" .
+            "ServerVer={$version}\r\n" .
+            "PushProtVer={$version}\r\n" .
+            "MultiBioDataSupport=" . config('adms.multi_bio_data_support') . "\r\n" .
+            "MultiBioPhotoSupport=" . config('adms.multi_bio_photo_support');
     }
 
     /**
@@ -173,18 +199,27 @@ class iclockController extends Controller
 
     /**
      * Everything a terminal uploads lands here: attendance punches, operation
-     * logs, and — the part that matters for biometrics — user records and
-     * fingerprint templates, whether volunteered on enrolment or sent in answer
-     * to a DATA QUERY FINGERTMP we queued earlier.
+     * logs, and — the part that matters for biometrics — user records,
+     * fingerprint templates, face templates and face comparison photos, whether
+     * volunteered on enrolment or sent in answer to a DATA QUERY we queued
+     * earlier.
      */
     public function receiveRecords(Request $request)
     {
         Log::info('call receiveRecords', ['request' => $request->all()]);
 
-        $content['url'] = json_encode($request->all());
-        $content['data'] = $request->getContent();
-
-        DB::table('finger_log')->insert($content);
+        // finger_log.data is a TEXT column. A face upload is routinely larger
+        // than that, and letting the insert fail would turn into a 500 that
+        // the terminal retries forever — so the log keeps a prefix, and can
+        // never stop the payload from being processed.
+        try {
+            DB::table('finger_log')->insert([
+                'url' => json_encode($request->all()),
+                'data' => substr((string) $request->getContent(), 0, 60000),
+            ]);
+        } catch (Throwable $e) {
+            Log::error('receiveRecords finger log ', ['error' => $e->getMessage()]);
+        }
 
         try {
             $sn = $request->input('SN');
@@ -220,7 +255,8 @@ class iclockController extends Controller
 
             $parser = app(BiometricRecordParser::class);
 
-            if ($table === 'OPERLOG' || $table === 'OPLOG' || $parser->looksLikeBiometricPayload($body)) {
+            if (in_array($table, ['OPERLOG', 'OPLOG', 'BIODATA', 'BIOPHOTO'], true)
+                || $parser->looksLikeBiometricPayload($body)) {
                 return $this->receiveBiometricRecords($request, $sn, $table, $body, $device, $parser);
             }
 
@@ -233,9 +269,10 @@ class iclockController extends Controller
     }
 
     /**
-     * User / biometric upload (table=OPERLOG). Templates go to
-     * fingerprint_templates via FingerprintIngestService; anything else in the
-     * payload keeps its old home in device_options.
+     * User / biometric upload (table=OPERLOG, BIODATA, BIOPHOTO). Templates go
+     * to fingerprint_templates / face_templates / face_photos via
+     * FingerprintIngestService; anything else in the payload keeps its old
+     * home in device_options.
      */
     protected function receiveBiometricRecords(
         Request $request,
@@ -398,7 +435,7 @@ class iclockController extends Controller
         Log::info('---------call querydata', ['request' => $request->all()]);
         // log header and content
         Log::info('querydata', ['url' => json_encode($request->all())]);
-        Log::info('querydata', ['data' => $request->getContent()]);
+        Log::info('querydata', ['data' => substr((string) $request->getContent(), 0, 2000)]);
         $endpoint = parse_url($request->url(), PHP_URL_PATH);
 
         // add to device logs
@@ -415,6 +452,22 @@ class iclockController extends Controller
             ['serial_number' => $request->input('SN')],
             ['online' => now()]
         );
+
+        // Some firmware answers a DATA QUERY here instead of on /iclock/cdata.
+        // Whatever templates come back this way must not be dropped.
+        try {
+            $body = (string) $request->getContent();
+
+            if (app(BiometricRecordParser::class)->looksLikeBiometricPayload($body)) {
+                $result = app(FingerprintIngestService::class)->ingest($request->input('SN'), $body);
+
+                Log::info('querydata: biometric payload', array_merge($result, [
+                    'sn' => $request->input('SN'),
+                ]));
+            }
+        } catch (Throwable $e) {
+            Log::error('querydata', ['error' => $e->getMessage()]);
+        }
 
         $response = "OK";
 
