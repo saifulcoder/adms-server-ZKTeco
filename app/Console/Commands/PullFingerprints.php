@@ -51,7 +51,7 @@ class PullFingerprints extends Command
 
         foreach ($devices as $device) {
             if ($pin) {
-                $queued = $service->forPin($device, $pin, $fids) + $service->faces($device, [$pin]);
+                $queued = $service->forPin($device, $pin, $fids) + $service->faces($device);
                 $mode = "PIN {$pin}";
             } elseif ($roster) {
                 $queued = $service->forDevice($device, null, $fids) + $service->faces($device);

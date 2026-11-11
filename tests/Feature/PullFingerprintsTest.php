@@ -56,15 +56,15 @@ class PullFingerprintsTest extends TestCase
 
         $queued = app(PullFingerprintsService::class)->bulk($device);
 
-        // CHECK + DATA QUERY USERINFO + one face query per face type
-        $this->assertSame(4, $queued);
+        // CHECK + DATA QUERY USERINFO + one query per face type + face photos
+        $this->assertSame(5, $queued);
         $this->assertStringContainsString(
             ':CHECK',
             $device->commands()->where('type', PullFingerprintsService::TYPE_CHECK)->first()->data
         );
     }
 
-    public function test_bulk_pull_also_asks_for_face_templates(): void
+    public function test_bulk_pull_also_asks_for_face_data(): void
     {
         $this->office();
         $device = $this->device();
@@ -73,13 +73,14 @@ class PullFingerprintsTest extends TestCase
 
         $faces = $device->commands()->where('type', PullFingerprintsService::TYPE_QUERY_FACE)->orderBy('id')->get();
 
-        $this->assertCount(2, $faces);
-        $this->assertStringEndsWith(':DATA QUERY BIODATA Type=2', $faces[0]->data);
-        $this->assertStringEndsWith(':DATA QUERY BIODATA Type=9', $faces[1]->data);
+        $this->assertCount(3, $faces);
+        $this->assertStringEndsWith(':DATA QUERY tablename=biodata,fielddesc=*,filter=Type=2', $faces[0]->data);
+        $this->assertStringEndsWith(':DATA QUERY tablename=biodata,fielddesc=*,filter=Type=9', $faces[1]->data);
+        $this->assertStringEndsWith(':DATA QUERY tablename=biophoto,fielddesc=*,filter=*', $faces[2]->data);
         $this->assertSame('TYPE:9', $faces[1]->reference);
     }
 
-    public function test_face_pull_can_target_one_employee(): void
+    public function test_an_identical_pending_face_pull_is_not_queued_twice(): void
     {
         config(['adms.face_types' => [9]]);
 
@@ -87,14 +88,39 @@ class PullFingerprintsTest extends TestCase
         $device = $this->device();
         $service = app(PullFingerprintsService::class);
 
-        $this->assertSame(1, $service->faces($device, ['1234']));
-        // Same pull again while the first is still pending: nothing new.
-        $this->assertSame(0, $service->faces($device, ['1234']));
+        // One template query + one photo query.
+        $this->assertSame(2, $service->faces($device));
+        $this->assertSame(0, $service->faces($device));
+    }
 
-        $command = $device->commands()->where('type', PullFingerprintsService::TYPE_QUERY_FACE)->first();
+    public function test_a_bulk_pull_makes_the_next_handshake_ask_for_a_full_resend_once(): void
+    {
+        $this->office();
+        $device = $this->device();
 
-        $this->assertStringEndsWith(":DATA QUERY BIODATA Type=9\tPIN=1234", $command->data);
-        $this->assertSame('PIN:1234/TYPE:9', $command->reference);
+        $this->get('/iclock/cdata?SN=SN-1&options=all')->assertDontSee("OpStamp=0\r\n", false);
+
+        app(PullFingerprintsService::class)->bulk($device);
+
+        // Another terminal must not be told to resend.
+        $this->device('SN-2');
+        $this->get('/iclock/cdata?SN=SN-2&options=all')->assertDontSee("OpStamp=0\r\n", false);
+
+        $this->get('/iclock/cdata?SN=SN-1&options=all')->assertSee("OpStamp=0\r\n", false);
+        // Only once: the terminal must not re-upload everything on every reconnect.
+        $this->get('/iclock/cdata?SN=SN-1&options=all')->assertDontSee("OpStamp=0\r\n", false);
+    }
+
+    public function test_the_full_resend_can_be_switched_off(): void
+    {
+        config(['adms.resend_on_pull' => false]);
+
+        $this->office();
+        $device = $this->device();
+
+        app(PullFingerprintsService::class)->bulk($device);
+
+        $this->get('/iclock/cdata?SN=SN-1&options=all')->assertDontSee("OpStamp=0\r\n", false);
     }
 
     public function test_face_pull_can_be_switched_off(): void
@@ -236,13 +262,39 @@ class PullFingerprintsTest extends TestCase
         $this->postCdata(
             '/iclock/querydata?SN=SN-1&type=BioData&tablename=biodata&count=1',
             "biodata pin=1234\tno=0\tindex=0\tvalid=1\tduress=0\ttype=9\tmajorver=5\tminorver=8\tformat=0\ttmp=RkFDRQ=="
-        )->assertOk();
+        )->assertOk()->assertSee('biodata=1');
 
         $face = FaceTemplate::first();
 
         $this->assertNotNull($face);
         $this->assertSame('1234', $face->pin);
         $this->assertSame('5.8', $face->version);
+    }
+
+    public function test_face_photos_answered_on_querydata_are_stored(): void
+    {
+        $this->office();
+        $this->device();
+
+        $this->postCdata(
+            '/iclock/querydata?SN=SN-1&type=tabledata&tablename=biophoto&count=1',
+            "biophoto pin=1234\tfilename=1234.jpg\ttype=9\tsize=4\tcontent=QUJD"
+        )->assertOk()->assertSee('biophoto=1');
+
+        $this->assertSame('QUJD', FacePhoto::first()->content);
+    }
+
+    public function test_a_terminals_self_description_is_not_treated_as_attendance(): void
+    {
+        $this->office();
+        $this->device();
+
+        $this->postCdata(
+            '/iclock/cdata?SN=SN-1&table=options',
+            "~DeviceName=SpeedFace-V5L,FaceFunOn=1,FaceVersion=58\tBioPhotoFun=1,BioDataFun=1"
+        )->assertOk();
+
+        $this->assertDatabaseCount('attendances', 0);
     }
 
     public function test_a_template_uploaded_by_the_terminal_is_stored(): void
@@ -430,8 +482,10 @@ class PullFingerprintsTest extends TestCase
 
         $this->get('/iclock/cdata?SN=SN-1&options=all')
             ->assertSee("PushProtVer=2.4.1\r\n", false)
-            ->assertSee('MultiBioDataSupport=0:1:1:0:0:0:0:0:0:1')
-            ->assertSee('MultiBioPhotoSupport=0:0:0:0:0:0:0:0:0:1');
+            ->assertSee("PushOptionsFlag=1\r\n", false)
+            ->assertSee('FaceFunOn')
+            ->assertSee('MultiBioDataSupport=0:1:1:0:0:0:0:1:1:1:1')
+            ->assertSee('MultiBioPhotoSupport=0:0:0:0:0:0:0:0:0:1:0');
 
         $this->get('/iclock/cdata?SN=SN-2&options=all')->assertDontSee('PushProtVer');
     }

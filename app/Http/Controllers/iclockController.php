@@ -10,6 +10,7 @@ use App\Models\LogEntry;
 use App\Services\BiometricRecordParser;
 use App\Services\CommandIdService;
 use App\Services\FingerprintIngestService;
+use App\Services\PullFingerprintsService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -70,9 +71,19 @@ class iclockController extends Controller
             $format = 'Y-m-d H:i:s';
             $localTime = $date->format($format);
 
+            // After a bulk pull the terminal is told, once, that the server
+            // holds none of its user data, so it re-uploads every user,
+            // fingerprint and face it has. See PullFingerprintsService.
+            $opStamp = $localTime;
+
+            if (PullFingerprintsService::consumeResend($request->input('SN'))) {
+                $opStamp = '0';
+                Log::info('handshake: full resend requested', ['sn' => $request->input('SN')]);
+            }
+
             $r = "GET OPTION FROM: {$request->input('SN')}\r\n" .
                 "Stamp=9999\r\n" .
-                "OpStamp=" . $localTime . "\r\n" .
+                "OpStamp=" . $opStamp . "\r\n" .
                 "ErrorDelay=60\r\n" .
                 "Delay=30\r\n" .
                 "ResLogDay=18250\r\n" .
@@ -120,6 +131,10 @@ class iclockController extends Controller
         return "\r\n" .
             "ServerVer={$version}\r\n" .
             "PushProtVer={$version}\r\n" .
+            // Ask the terminal to report what it can do; the answer arrives
+            // on /iclock/cdata?table=options and is logged there.
+            "PushOptionsFlag=1\r\n" .
+            "PushOptions=" . config('adms.push_options') . "\r\n" .
             "MultiBioDataSupport=" . config('adms.multi_bio_data_support') . "\r\n" .
             "MultiBioPhotoSupport=" . config('adms.multi_bio_photo_support');
     }
@@ -251,6 +266,18 @@ class iclockController extends Controller
                 ]);
             } catch (Throwable $e) {
                 Log::error('receiveRecords device log ', ['error' => $e->getMessage()]);
+            }
+
+            // The terminal describing itself (FaceFunOn, FaceVersion, ...).
+            // Not records — but the first thing to read when a pull comes
+            // back without the data it was meant to fetch.
+            if ($table === 'OPTIONS') {
+                Log::info('receiveRecords: device options', [
+                    'sn' => $sn,
+                    'options' => substr($body, 0, 4000),
+                ]);
+
+                return "OK";
             }
 
             $parser = app(BiometricRecordParser::class);
@@ -453,8 +480,11 @@ class iclockController extends Controller
             ['online' => now()]
         );
 
-        // Some firmware answers a DATA QUERY here instead of on /iclock/cdata.
-        // Whatever templates come back this way must not be dropped.
+        $response = "OK";
+
+        // PUSH 3.x firmware answers a DATA QUERY here instead of on
+        // /iclock/cdata. Whatever templates come back this way must not be
+        // dropped, and the terminal expects "<table>=<records taken>" back.
         try {
             $body = (string) $request->getContent();
 
@@ -464,12 +494,17 @@ class iclockController extends Controller
                 Log::info('querydata: biometric payload', array_merge($result, [
                     'sn' => $request->input('SN'),
                 ]));
+
+                $tablename = strtolower((string) $request->input('tablename'));
+
+                if (in_array($tablename, ['biodata', 'biophoto'], true)) {
+                    $response = $tablename . '='
+                        . ($result['fingerprints'] + $result['faces'] + $result['face_photos']);
+                }
             }
         } catch (Throwable $e) {
             Log::error('querydata', ['error' => $e->getMessage()]);
         }
-
-        $response = "OK";
 
         Log::info('querydata', ['response' => $response]);
 

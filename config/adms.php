@@ -50,7 +50,11 @@ return [
     |
     | multi_bio_*_support are the per-type capability masks sent with it,
     | indexed by biometric type: 0 general, 1 fingerprint, 2 near-infrared
-    | face, ... 9 visible-light face.
+    | face, ... 7 finger vein, 8 palm, 9 visible-light face. The defaults are
+    | the masks other working ADMS servers send.
+    |
+    | push_options is the list of settings the terminal is asked to report
+    | about itself; the answer is logged as "receiveRecords: device options".
     |
     */
     'push_prot_ver' => env('ADMS_PUSH_PROT_VER'),
@@ -60,9 +64,15 @@ return [
         explode(',', (string) env('ADMS_PUSH_PROT_VER_DEVICES', ''))
     ))),
 
-    'multi_bio_data_support' => env('ADMS_MULTI_BIO_DATA_SUPPORT', '0:1:1:0:0:0:0:0:0:1'),
+    'multi_bio_data_support' => env('ADMS_MULTI_BIO_DATA_SUPPORT', '0:1:1:0:0:0:0:1:1:1:1'),
 
-    'multi_bio_photo_support' => env('ADMS_MULTI_BIO_PHOTO_SUPPORT', '0:0:0:0:0:0:0:0:0:1'),
+    'multi_bio_photo_support' => env('ADMS_MULTI_BIO_PHOTO_SUPPORT', '0:0:0:0:0:0:0:0:0:1:0'),
+
+    'push_options' => env(
+        'ADMS_PUSH_OPTIONS',
+        'UserCount,TransactionCount,FingerFunOn,FPVersion,FPCount,FaceFunOn,FaceVersion,FaceCount,'
+        . 'BioPhotoFun,BioDataFun,VisilightFun,MultiBioDataSupport,MultiBioPhotoSupport'
+    ),
 
     /*
     |--------------------------------------------------------------------------
@@ -92,13 +102,23 @@ return [
     |
     | pull_faces  Also ask for face templates whenever fingerprints are pulled.
     |
-    | face_types  Biometric types queried (DATA QUERY BIODATA Type=n):
-    |             2 = near-infrared face, 9 = visible-light face. A terminal
-    |             that does not have a given type just reports the command as
-    |             failed, so asking for both is harmless.
+    | face_types  Biometric types queried (DATA QUERY tablename=biodata,
+    |             ...,filter=Type=n): 2 = near-infrared face, 9 = visible-light
+    |             face. Only PUSH 3.x firmware answers these; anything else
+    |             reports the command as failed, which is harmless.
+    |
+    | resend_on_pull  PUSH 2.x firmware has no face query: it hands faces over
+    |             only when it re-uploads all its user data. With this on, a
+    |             bulk pull makes the terminal's next handshake answer
+    |             OpStamp=0, once, which triggers exactly that. The request
+    |             lapses after resend_window_minutes if no handshake comes.
     |
     */
     'pull_faces' => (bool) env('ADMS_PULL_FACES', true),
+
+    'resend_on_pull' => (bool) env('ADMS_RESEND_ON_PULL', true),
+
+    'resend_window_minutes' => (int) env('ADMS_RESEND_WINDOW_MINUTES', 15),
 
     'face_types' => array_map(
         'intval',

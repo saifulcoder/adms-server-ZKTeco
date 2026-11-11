@@ -6,6 +6,7 @@ use App\Models\Agente;
 use App\Models\Device;
 use App\Models\Oficina;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -24,9 +25,11 @@ use Illuminate\Support\Facades\Log;
  *    one employee. Precise and firmware-independent, but costs one command per
  *    finger, so pulling a full office this way is expensive.
  *
- *  - Faces (`DATA QUERY BIODATA Type=n [PIN=x]`): the unified-template query,
- *    one command per face type for a whole terminal or for one employee. Every
- *    pull above also queues these unless adms.pull_faces is off.
+ *  - Faces: PUSH 3.x firmware answers `DATA QUERY tablename=biodata,...` and
+ *    `tablename=biophoto`; PUSH 2.x firmware has no face query and only hands
+ *    faces over in a full resend, so a bulk pull also asks for one (see
+ *    requestResend). Every pull queues the queries unless adms.pull_faces is
+ *    off.
  *
  * Either way the templates come back asynchronously: the terminal POSTs them to
  * /iclock/cdata, where iclockController hands them to FingerprintIngestService.
@@ -75,6 +78,10 @@ class PullFingerprintsService
 
         $queued += $this->faces($device);
 
+        // CHECK makes the terminal come back for its options; answer that
+        // handshake with OpStamp=0 so it re-sends what it already holds.
+        $this->requestResend($device);
+
         Log::info('PullFingerprintsService: bulk pull queued', [
             'device_id' => $device->id,
             'sn' => $device->serial_number,
@@ -85,20 +92,23 @@ class PullFingerprintsService
     }
 
     /**
-     * Ask a terminal for the face templates it holds.
+     * Ask a terminal for the face data it holds: one unified-template query
+     * per face type, plus one for the comparison photos.
      *
-     * With no PINs this is one command per face type for the whole terminal;
-     * with PINs, one per type per employee. Terminals that have no faces of a
-     * given type (or no face support at all) just fail the command, which is
-     * recorded on /iclock/devicecmd like any other.
+     * This is the table form of the query, which is what PUSH 3.x firmware
+     * answers (on /iclock/querydata). PUSH 2.x firmware has no face query at
+     * all — an earlier `DATA QUERY BIODATA Type=n` was refused with Return=-3
+     * by real terminals — and hands faces over only as part of a full resend,
+     * which is what requestResend() arranges. A terminal that does not know
+     * these commands just fails them, which is recorded on /iclock/devicecmd
+     * like any other.
      *
-     * Comparison photos (BIOPHOTO) have no query of their own here — they are
-     * uploaded on enrolment when the handshake TransFlag asks for them.
+     * Always the whole terminal: the filter syntax for narrowing to one PIN
+     * is not something to guess at, and re-receiving a face is idempotent.
      *
-     * @param iterable<int|string>|null $pins null = every face on the terminal
      * @return int number of commands queued (0 when adms.pull_faces is off)
      */
-    public function faces(Device $device, ?iterable $pins = null): int
+    public function faces(Device $device): int
     {
         if (!config('adms.pull_faces', true)) {
             return 0;
@@ -111,34 +121,21 @@ class PullFingerprintsService
 
         $queued = 0;
 
-        if ($pins === null) {
-            foreach ($types as $type) {
-                $queued += $this->queue(
-                    $device,
-                    fn (int $cmdId) => "C:{$cmdId}:DATA QUERY BIODATA Type={$type}",
-                    self::TYPE_QUERY_FACE,
-                    "TYPE:{$type}"
-                );
-            }
-        } else {
-            foreach ($pins as $pin) {
-                $pin = trim((string) $pin);
-
-                // A PIN ends up inside a command line; never let one break it.
-                if ($pin === '' || preg_match('/\s/', $pin)) {
-                    continue;
-                }
-
-                foreach ($types as $type) {
-                    $queued += $this->queue(
-                        $device,
-                        fn (int $cmdId) => "C:{$cmdId}:DATA QUERY BIODATA Type={$type}\tPIN={$pin}",
-                        self::TYPE_QUERY_FACE,
-                        "PIN:{$pin}/TYPE:{$type}"
-                    );
-                }
-            }
+        foreach ($types as $type) {
+            $queued += $this->queue(
+                $device,
+                fn (int $cmdId) => "C:{$cmdId}:DATA QUERY tablename=biodata,fielddesc=*,filter=Type={$type}",
+                self::TYPE_QUERY_FACE,
+                "TYPE:{$type}"
+            );
         }
+
+        $queued += $this->queue(
+            $device,
+            fn (int $cmdId) => "C:{$cmdId}:DATA QUERY tablename=biophoto,fielddesc=*,filter=*",
+            self::TYPE_QUERY_FACE,
+            'PHOTO'
+        );
 
         Log::info('PullFingerprintsService: face pull queued', [
             'device_id' => $device->id,
@@ -147,6 +144,42 @@ class PullFingerprintsService
         ]);
 
         return $queued;
+    }
+
+    /**
+     * Make the terminal's next handshake answer OpStamp=0, once.
+     *
+     * A terminal only uploads user data newer than the stamp the server gives
+     * it, so a CHECK on its own re-sends nothing that was enrolled earlier.
+     * OpStamp=0 tells it the server holds nothing, and it re-uploads every
+     * user, fingerprint, face template and comparison photo. The flag is
+     * consumed by the first handshake that sees it (the CHECK queued by a bulk
+     * pull triggers one; so does a restart) and expires on its own otherwise.
+     */
+    public function requestResend(Device $device): void
+    {
+        if (!config('adms.resend_on_pull', true) || !$device->serial_number) {
+            return;
+        }
+
+        Cache::put(
+            self::resendCacheKey($device->serial_number),
+            true,
+            now()->addMinutes((int) config('adms.resend_window_minutes', 15))
+        );
+    }
+
+    /**
+     * True, once, when a resend was requested for this serial number.
+     */
+    public static function consumeResend(?string $sn): bool
+    {
+        return $sn !== null && $sn !== '' && (bool) Cache::pull(self::resendCacheKey($sn));
+    }
+
+    protected static function resendCacheKey(string $sn): string
+    {
+        return 'adms:resend:' . $sn;
     }
 
     /**
